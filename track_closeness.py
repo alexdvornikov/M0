@@ -27,7 +27,11 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
                                   for thisPosB in posB.T])
 
         return np.min(pairwiseDists)
-        
+
+    elif metric == 'PCA':
+        # TODO implement segment-based distance
+        return 0
+    
     else:
         raise ValueError ("this metric is not defined!")            
 
@@ -43,7 +47,9 @@ def main(args):
     if args.n > 0:
         Ntracks = args.n
     else:
-        Ntracks = len(tracks)
+        Ntracks = tracks.shape[0]
+
+    print (Ntracks)
     
     for trackA in tracks[:Ntracks]:
         for trackB in tracks:
