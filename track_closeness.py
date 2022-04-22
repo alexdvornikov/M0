@@ -62,6 +62,7 @@ def main(args):
                                  str(trackB['track_id']),
                                  "nhits:",
                                  str(trackB['nhit'])]))
+
                 Ai = trackA['track_id']
                 Bi = trackB['track_id']
                 d = closeness(trackA, trackB, f)
@@ -70,11 +71,15 @@ def main(args):
                 Bid.append(Bi)
                 dists.append(d)
                 print ("closeness: " + str(d))
+                
 
-    plt.figure()
-    plt.hist(dists)
+    if args.o:
+        np.savetxt(args.o, np.array([Aid, Bid, dists])
+    else:
+        plt.figure()
+        plt.hist(dists)
 
-    plt.show()
+        plt.show()
     
 if __name__ == '__main__':
     import argparse
@@ -85,7 +90,11 @@ if __name__ == '__main__':
     parser.add_argument('-n',
                         default = -1,
                         type = int,
-                        help='examine only the first n tracks.  ')
+                        help='examine only the first n tracks.')
+    parser.add_argument('-o',
+                        default = "",
+                        type = str,
+                        help='Output file to save the results.')
 
     args = parser.parse_args()
 
