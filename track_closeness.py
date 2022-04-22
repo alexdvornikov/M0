@@ -32,14 +32,18 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         return 0
     
     else:
-        raise ValueError ("this metric is not defined!")            
+        raise ValueError ("this metric is not defined!")
 
 def main(args):
     f = h5py.File(args.infile)
 
-    tracks = np.array(f['tracks'])
+    rawTracks = np.array(f['tracks'])
 
-    dists = []
+    mask = rawTracks['length'] > 100.
+
+    tracks = rawTracks[mask]
+    
+    hitDists = []
     Aid = []
     Bid = []
 
@@ -48,8 +52,6 @@ def main(args):
     else:
         Ntracks = tracks.shape[0]
 
-    print (Ntracks)
-    
     for trackA in tracks[:Ntracks]:
         for trackB in tracks:
             if trackA['track_id'] > trackB['track_id']:
@@ -69,15 +71,15 @@ def main(args):
 
                 Aid.append(Ai)
                 Bid.append(Bi)
-                dists.append(d)
+                hitDists.append(d)
                 print ("closeness: " + str(d))
                 
 
     if args.o:
-        np.savetxt(args.o, np.array([Aid, Bid, dists])
+        np.savetxt(args.o, np.array([Aid, Bid, hitDists]))
     else:
         plt.figure()
-        plt.hist(dists)
+        plt.hist(hitDists)
 
         plt.show()
     
