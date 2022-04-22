@@ -4,8 +4,8 @@ import h5py
 
 vd = 1.6
 
-def distance(posA, posB):
-    return np.sqrt(np.sum(np.power(posA - posB, 2)))
+def pairWiseDist(posPairArray):
+    return np.sqrt(np.sum(np.power(posPairArray[:,1,:] - posPairArray[:,0,:], 2), axis = -1))
 
 def closeness(trackA, trackB, h5File, metric = 'hit'):
     if metric == 'hit':
@@ -22,11 +22,10 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
                          hitsB['py'],
                          vd*(hitsB['ts'] - t0B)])
 
-        pairwiseDists = np.array([distance(thisPosA, thisPosB)
-                                  for thisPosA in posA.T
-                                  for thisPosB in posB.T])
-
-        return np.min(pairwiseDists)
+        posPairs = np.array([[thisPosA, thisPosB]
+                             for thisPosA in posA.T
+                             for thisPosB in posB.T])
+        return np.min(pairWiseDist(posPairs))
 
     elif metric == 'PCA':
         # TODO implement segment-based distance
