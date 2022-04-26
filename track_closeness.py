@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
-vd = 1.6
+vd = 1.62 # mm/us
+drift_dist = 310. # mm
+clock_interval = 0.1 # us
 
 class POCA:
     def __init__(self, d, pointA, pointB):
@@ -20,22 +22,29 @@ class POCA:
 def pairWiseDist(posPairArray):
     return np.sqrt(np.sum(np.power(posPairArray[:,1,:] - posPairArray[:,0,:], 2), axis = -1))
 
+def hit_to_3d(hits, event):
+    t0 = event['ts_start']
+
+    x = hits['px']
+    y = hits['py']
+    t = clock_interval*(hits['ts'] - t0)
+    grp = hits['iogroup']
+    parity = np.power(-1, grp)
+    z = parity*(drift_dist - t*vd)
+
+    pos3d = np.array([x, y, z])
+    return pos3d
+
 def closeness(trackA, trackB, h5File, metric = 'hit'):
     if metric == 'hit':
         hitsA = h5File['hits'][trackA['hit_ref']]
         hitsB = h5File['hits'][trackB['hit_ref']]
 
-        t0A = trackA['t0']
-        t0B = trackB['t0']
+        evA = h5File['events'][trackA['event_ref']]
+        evB = h5File['events'][trackB['event_ref']]
 
-        print (hitsA['ts'])
-        print (hitsA['ts'] - t0A)
-        posA = np.array([hitsA['px'],
-                         hitsA['py'],
-                         vd*(hitsA['ts'] - t0A)])
-        posB = np.array([hitsB['px'],
-                         hitsB['py'],
-                         vd*(hitsB['ts'] - t0B)])
+        posA = hit_to_3d(hitsA, evA)
+        posB = hit_to_3d(hitsB, evB)
 
         posPairs = np.array([[thisPosA, thisPosB]
                              for thisPosA in posA.T
@@ -44,7 +53,6 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         d = np.min(pwd)
         posPairMin = np.argmin(pwd)
         posAMin, posBMin = posPairs[posPairMin]
-        print (posAMin, posBMin)
         return (d)
 
     elif metric == 'PCA':
@@ -87,7 +95,7 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         else:
             pocaB = Be + s*Bhat
 
-        return np.power(np.dot(pocaA, pocaB), 0.5)
+        return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5)
             
     else:
         raise ValueError ("this metric is not defined!")
@@ -126,11 +134,13 @@ def main(args):
                 Ai = trackA['track_id']
                 Bi = trackB['track_id']
                 d = closeness(trackA, trackB, f)
+                dPCA = closeness(trackA, trackB, f, metric = 'PCA')
 
                 Aid.append(Ai)
                 Bid.append(Bi)
                 hitDists.append(d)
                 print ("closeness: " + str(d))
+                print ("closeness (PCA): " + str(dPCA))
                 
 
     if args.o:
