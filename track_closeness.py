@@ -56,7 +56,6 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         return (d)
 
     elif metric == 'PCA':
-        # TODO implement segment-based distance
         As = np.array([trackA['start'][0],
                        trackA['start'][1],
                        trackA['start'][2]])
@@ -81,19 +80,50 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         # length along the 'B' track.  Within the track is s in [0, 1]
         s = 1./det*(np.dot(Ahat, Ahat)*(np.dot(Ae, Bhat) - np.dot(Be, Bhat)) + np.dot(Ahat, Bhat)*(np.dot(Be, Ahat) - np.dot(Ae, Ahat)))
 
-        if l < 0:
-            pocaA = Ae
-        elif l > 1:
-            pocaA = As
-        else:
+        # if the point is inside of both segments, that's it!
+        if 0 <= l <= 1 and 0 <= s <= 1:
             pocaA = Ae + l*Ahat
-            
-        if s < 0:
-            pocaB = Be
-        elif s > 1:
-            pocaB = Bs
-        else:
             pocaB = Be + s*Bhat
+        # if the point is outside of at least one segment,
+        else:
+            # take the segment which ends farthest from its point
+            if l < 0:
+                dOutsideA = np.abs(l)
+                pocaA = Ae
+            elif l > 1:
+                dOutsideA = l - 1
+                pocaA = As
+            else:
+                dOutsideA = 0
+            if s < 0:
+                dOutsideB = np.abs(s)
+                pocaB = Be
+            elif s > 1:
+                dOutsideB = s - 1
+                pocaB = Bs
+            else:
+                dOutsideB = 0
+
+            if dOutsideA > dOutsideB:
+                # then, using that as the new point, re-calculate for the other
+                s = np.dot(Bhat, pocaA - Be)/np.dot(Bhat, Bhat)
+                # if the point of the other is still outside of the segment,
+                # then take the end which is closest
+                if s < 0:
+                    pocaB = Be
+                elif s > 1:
+                    pocaB = Bs
+                else:
+                    pocaB = Be + s*Bhat
+
+            elif dOutsideB > dOutsideA:
+                l = np.dot(Ahat, pocaB - Ae)/np.dot(Ahat, Ahat)
+                if l < 0:
+                    pocaA = Ae
+                elif l > 1:
+                    pocaA = As
+                else:
+                    pocaA = Ae + l*Ahat
 
         return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5)
             
@@ -110,6 +140,7 @@ def main(args):
     tracks = rawTracks[mask]
     
     hitDists = []
+    PCAdists = []
     Aid = []
     Bid = []
 
@@ -139,6 +170,7 @@ def main(args):
                 Aid.append(Ai)
                 Bid.append(Bi)
                 hitDists.append(d)
+                PCAdists.append(dPCA)
                 print ("closeness: " + str(d))
                 print ("closeness (PCA): " + str(dPCA))
                 
@@ -147,7 +179,30 @@ def main(args):
         np.savetxt(args.o, np.array([Aid, Bid, hitDists]))
     else:
         plt.figure()
-        plt.hist(hitDists)
+        plt.hist(hitDists,
+                 histtype = 'step',
+                 label = 'hit-to-hit',
+                 density = True)
+        plt.hist(PCAdists,
+                 histtype = 'step',
+                 label = 'axis-to-axis',
+                 density = True)
+        plt.xlabel(r'track-to-track distance (mm)')
+        plt.legend()
+
+        plt.figure()
+        diff = np.abs(np.array(hitDists) - np.array(PCAdists))
+        print ('mean diff: ', np.mean(diff))
+        plt.hist(diff,
+                 histtype = 'step',
+                 density = True)
+        plt.xlabel(r'distance metric disagreement (mm)')
+        plt.semilogy()
+        
+        plt.figure()
+        plt.scatter(hitDists, PCAdists)
+        plt.xlabel(r'hit-to-hit distance (mm)')
+        plt.ylabel(r'axis-to-axis distance (mm)')
 
         plt.show()
     
