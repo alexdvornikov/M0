@@ -4,6 +4,8 @@ from mpl_toolkits import mplot3d as plt3d
 
 import h5py
 
+from utils import *
+
 def draw_boundaries(ax):
     bounds = [[-300, 300], [-600, 600], [-310, 310]]
     cathodeZ = 0
@@ -85,19 +87,11 @@ def plot_track(ax, track, f, plotHits = False):
     t0 = event['ts_start']
 
     hits = f['hits'][track['hit_ref']]
-
-    x = hits['px']
-    y = hits['py']
-    t = 0.1*(hits['ts'] - t0)
-    v = 1.62
-
     q = hits['q']
-    grp = hits['iogroup']
-    parity = np.power(-1, grp)
-    z = parity*(310. - t*v) 
 
     if plotHits:
-        ax.scatter(x, y, z, c = q)
+        pos3d = hit_to_3d(hits, event)
+        ax.scatter(*pos3d, c = q)
     
     start = np.array([track['start'][0],
                       track['start'][1],

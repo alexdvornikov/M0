@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
-vd = 1.62 # mm/us
-drift_dist = 310. # mm
-clock_interval = 0.1 # us
+from utils import *
 
 class POCA:
     def __init__(self, d, pointA, pointB):
@@ -18,22 +16,6 @@ class POCA:
         self.d = d
         self.pointA = pointA
         self.pointB = pointB
-
-def pairWiseDist(posPairArray):
-    return np.sqrt(np.sum(np.power(posPairArray[:,1,:] - posPairArray[:,0,:], 2), axis = -1))
-
-def hit_to_3d(hits, event):
-    t0 = event['ts_start']
-
-    x = hits['px']
-    y = hits['py']
-    t = clock_interval*(hits['ts'] - t0)
-    grp = hits['iogroup']
-    parity = np.power(-1, grp)
-    z = parity*(drift_dist - t*vd)
-
-    pos3d = np.array([x, y, z])
-    return pos3d
 
 def closeness(trackA, trackB, h5File, metric = 'hit'):
     if metric == 'hit':
@@ -172,7 +154,7 @@ def main(args):
                 PCAdists.append(dPCA)
                 print ("closeness: " + str(d))
                 print ("closeness (PCA): " + str(dPCA))
-
+                    
     if args.o:
         np.savetxt(args.o, np.array([Aid, Bid, hitDists]))
     else:
