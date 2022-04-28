@@ -81,49 +81,48 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         s = 1./det*(np.dot(Ahat, Ahat)*(np.dot(Ae, Bhat) - np.dot(Be, Bhat)) + np.dot(Ahat, Bhat)*(np.dot(Be, Ahat) - np.dot(Ae, Ahat)))
 
         # if the point is inside of both segments, that's it!
-        if 0 <= l <= 1 and 0 <= s <= 1:
-            pocaA = Ae + l*Ahat
-            pocaB = Be + s*Bhat
         # if the point is outside of at least one segment,
+        # take the segment which ends farthest from its point
+        if l < 0:
+            dOutsideA = np.abs(l)
+            pocaA = Ae
+        elif l > 1:
+            dOutsideA = l - 1
+            pocaA = As
         else:
-            # take the segment which ends farthest from its point
-            if l < 0:
-                dOutsideA = np.abs(l)
-                pocaA = Ae
-            elif l > 1:
-                dOutsideA = l - 1
-                pocaA = As
-            else:
-                dOutsideA = 0
+            dOutsideA = 0
+            pocaA = Ae + l*Ahat
+
+        if s < 0:
+            dOutsideB = np.abs(s)
+            pocaB = Be
+        elif s > 1:
+            dOutsideB = s - 1
+            pocaB = Bs
+        else:
+            dOutsideB = 0
+            pocaB = Be + s*Bhat
+       
+        if dOutsideA > dOutsideB:
+            # then, using that as the new point, re-calculate for the other
+            s = np.dot(Bhat, pocaA - Be)/np.dot(Bhat, Bhat)
+            # if the point of the other is still outside of the segment,
+            # then take the end which is closest
             if s < 0:
-                dOutsideB = np.abs(s)
                 pocaB = Be
             elif s > 1:
-                dOutsideB = s - 1
                 pocaB = Bs
             else:
-                dOutsideB = 0
+                pocaB = Be + s*Bhat
 
-            if dOutsideA > dOutsideB:
-                # then, using that as the new point, re-calculate for the other
-                s = np.dot(Bhat, pocaA - Be)/np.dot(Bhat, Bhat)
-                # if the point of the other is still outside of the segment,
-                # then take the end which is closest
-                if s < 0:
-                    pocaB = Be
-                elif s > 1:
-                    pocaB = Bs
-                else:
-                    pocaB = Be + s*Bhat
-
-            elif dOutsideB > dOutsideA:
-                l = np.dot(Ahat, pocaB - Ae)/np.dot(Ahat, Ahat)
-                if l < 0:
-                    pocaA = Ae
-                elif l > 1:
-                    pocaA = As
-                else:
-                    pocaA = Ae + l*Ahat
+        elif dOutsideB > dOutsideA:
+            l = np.dot(Ahat, pocaB - Ae)/np.dot(Ahat, Ahat)
+            if l < 0:
+                pocaA = Ae
+            elif l > 1:
+                pocaA = As
+            else:
+                pocaA = Ae + l*Ahat
 
         return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5)
             
@@ -135,7 +134,7 @@ def main(args):
 
     rawTracks = np.array(f['tracks'])
 
-    mask = rawTracks['length'] > 100.
+    mask = rawTracks['length'] > 500.
 
     tracks = rawTracks[mask]
     
@@ -173,21 +172,24 @@ def main(args):
                 PCAdists.append(dPCA)
                 print ("closeness: " + str(d))
                 print ("closeness (PCA): " + str(dPCA))
-                
 
     if args.o:
         np.savetxt(args.o, np.array([Aid, Bid, hitDists]))
     else:
         plt.figure()
+        bins = np.concatenate([np.linspace(0, 100, 10)[:-1],
+                               np.linspace(100, 1200, 20)])
         plt.hist(hitDists,
                  histtype = 'step',
                  label = 'hit-to-hit',
-                 density = True)
+                 density = True,
+                 bins = bins)
         plt.hist(PCAdists,
                  histtype = 'step',
                  label = 'axis-to-axis',
-                 density = True)
-        plt.xlabel(r'track-to-track distance (mm)')
+                 density = True,
+                 bins = bins)
+        plt.xlabel(r'track-to-track distance (mm per bin width)')
         plt.legend()
 
         plt.figure()
