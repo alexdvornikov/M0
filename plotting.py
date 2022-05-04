@@ -105,3 +105,24 @@ def plot_track(ax, track, f, plotHits = False):
                c = 'b')
     ax.plot(*zip(start, end),
             c = 'g')
+    
+    
+    
+#---------------------------------------------------------------------------------------------------------#
+# Plot 10 tracks that are > 30 cm.
+# Assuming you downloaded a file from
+# https://portal.nersc.gov/project/dune/data/Module0/TPC1+2/dataRuns/tracksData/
+# and put it in the same directory.
+#---------------------------------------------------------------------------------------------------------#
+f = h5py.File(file_name, 'r') # 
+
+fig = plt.figure() 
+ax = fig.add_subplot(111, projection = '3d') 
+i = 0
+for thisTrack in f['tracks']:
+        if thisTrack['length'] > 300 and i < 10: 
+                i += 1
+                plot_track(ax, thisTrack, f, plotHits = True) 
+
+plt.show() 
+#---------------------------------------------------------------------------------------------------------#
