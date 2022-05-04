@@ -15,7 +15,8 @@ def hit_to_3d(hits, event):
     y = hits['py']
     t = clock_interval*(hits['ts'] - t0)
     grp = hits['iogroup']
-    parity = np.power(-1, grp)
+    #parity = np.power(-1, grp)
+    parity = np.power(-1, grp + 1) 
     z = parity*(drift_dist - t*vd)
 
     pos3d = np.array([x, y, z])
