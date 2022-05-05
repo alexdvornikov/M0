@@ -105,24 +105,46 @@ def plot_track(ax, track, f, plotHits = False):
                c = 'b')
     ax.plot(*zip(start, end),
             c = 'g')
-    
-    
-    
-#---------------------------------------------------------------------------------------------------------#
-# Plot 10 tracks that are > 30 cm.
-# Assuming you downloaded a file from
-# https://portal.nersc.gov/project/dune/data/Module0/TPC1+2/dataRuns/tracksData/
-# and put it in the same directory.
-#---------------------------------------------------------------------------------------------------------#
-f = h5py.File(file_name, 'r') # 
 
-fig = plt.figure() 
-ax = fig.add_subplot(111, projection = '3d') 
-i = 0
-for thisTrack in f['tracks']:
-        if thisTrack['length'] > 300 and i < 10: 
-                i += 1
-                plot_track(ax, thisTrack, f, plotHits = True) 
+def main(args):
+    f = h5py.File(args.infile, 'r')
 
-plt.show() 
-#---------------------------------------------------------------------------------------------------------#
+    rawTracks = np.array(f['tracks'])
+
+    trackMask = np.logical_and(rawTracks['length'] > 300,
+                               rawTracks['nhit'] > 0) # more variables to cut on here
+
+    tracks = rawTracks[trackMask]
+    
+    fig = plt.figure() 
+    ax = fig.add_subplot(111, projection = '3d') 
+
+    for thisTrack in tracks[:args.n]:
+        plot_track(ax, thisTrack, f, plotHits = True) 
+
+    if args.o:
+        plt.savefig(args.o, dpi = 300)
+    else:
+        plt.show() 
+
+if __name__ == '__main__': 
+    # Plot 10 tracks that are > 30 cm.
+    # Assuming you downloaded a file from
+    # https://portal.nersc.gov/project/dune/data/Module0/TPC1+2/dataRuns/tracksData/
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Plot the first N tracks from a given file')
+    parser.add_argument('infile',
+                        help = 'intput larpix data with track reconstruction')
+    parser.add_argument('-n',
+                        default = 10,
+                        type = int,
+                        help = 'plot the first n tracks (default 10)')
+    parser.add_argument('-o',
+                        default = '',
+                        type = str,
+                        help = 'save the output plot to a file')
+
+    args = parser.parse_args()
+
+    main(args)
