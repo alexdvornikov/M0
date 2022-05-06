@@ -6,99 +6,84 @@ import h5py
 
 from utils import *
 
+debug = False
+
 def draw_boundaries(ax):
-    bounds = [[-300, 300], [-600, 600], [-310, 310]]
-    cathodeZ = 0
+    for ix in range(detector.TPC_BORDERS.shape[0]):
+        bounds = detector.TPC_BORDERS[ix]*10
+                 
+        ax.plot([bounds[0][0], bounds[0][1]],
+                [bounds[1][0], bounds[1][0]],
+                [bounds[2][0], bounds[2][0]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][1]],
+                [bounds[1][1], bounds[1][1]],
+                [bounds[2][0], bounds[2][0]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][1]],
+                [bounds[1][0], bounds[1][0]],
+                [bounds[2][1], bounds[2][1]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][1]],
+                [bounds[1][1], bounds[1][1]],
+                [bounds[2][1], bounds[2][1]],
+                color = 'black', ls = '--')
 
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][0], bounds[1][0]],
-            [bounds[2][0], bounds[2][0]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][1], bounds[1][1]],
-            [bounds[2][0], bounds[2][0]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][0], bounds[1][0]],
-            [bounds[2][1], bounds[2][1]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][1], bounds[1][1]],
-            [bounds[2][1], bounds[2][1]],
-            color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][0]],
+                [bounds[1][0], bounds[1][1]],
+                [bounds[2][0], bounds[2][0]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][1], bounds[0][1]],
+                [bounds[1][0], bounds[1][1]],
+                [bounds[2][0], bounds[2][0]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][0]],
+                [bounds[1][0], bounds[1][1]],
+                [bounds[2][1], bounds[2][1]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][1], bounds[0][1]],
+                [bounds[1][0], bounds[1][1]],
+                [bounds[2][1], bounds[2][1]],
+                color = 'black', ls = '--')
 
-    ax.plot([bounds[0][0], bounds[0][0]],
-            [bounds[1][0], bounds[1][1]],
-            [bounds[2][0], bounds[2][0]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][1], bounds[0][1]],
-            [bounds[1][0], bounds[1][1]],
-            [bounds[2][0], bounds[2][0]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][0]],
-            [bounds[1][0], bounds[1][1]],
-            [bounds[2][1], bounds[2][1]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][1], bounds[0][1]],
-            [bounds[1][0], bounds[1][1]],
-            [bounds[2][1], bounds[2][1]],
-            color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][0]],
+                [bounds[1][0], bounds[1][0]],
+                [bounds[2][0], bounds[2][1]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][1], bounds[0][1]],
+                [bounds[1][0], bounds[1][0]],
+                [bounds[2][0], bounds[2][1]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][0], bounds[0][0]],
+                [bounds[1][1], bounds[1][1]],
+                [bounds[2][0], bounds[2][1]],
+                color = 'black', ls = '--')
+        ax.plot([bounds[0][1], bounds[0][1]],
+                [bounds[1][1], bounds[1][1]],
+                [bounds[2][0], bounds[2][1]],
+                color = 'black', ls = '--')
 
-    ax.plot([bounds[0][0], bounds[0][0]],
-            [bounds[1][0], bounds[1][0]],
-            [bounds[2][0], bounds[2][1]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][1], bounds[0][1]],
-            [bounds[1][0], bounds[1][0]],
-            [bounds[2][0], bounds[2][1]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][0]],
-            [bounds[1][1], bounds[1][1]],
-            [bounds[2][0], bounds[2][1]],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][1], bounds[0][1]],
-            [bounds[1][1], bounds[1][1]],
-            [bounds[2][0], bounds[2][1]],
-            color = 'black', ls = '--')
+        
+def plot_hits(ax, hits, track):
+    pos3d = hit_to_3d(my_geometry, hits, track['t0'])
 
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][0], bounds[1][0]],
-            [cathodeZ, cathodeZ],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][1]],
-            [bounds[1][1], bounds[1][1]],
-            [cathodeZ, cathodeZ],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][0], bounds[0][0]],
-            [bounds[1][0], bounds[1][1]],
-            [cathodeZ, cathodeZ],
-            color = 'black', ls = '--')
-    ax.plot([bounds[0][1], bounds[0][1]],
-            [bounds[1][0], bounds[1][1]],
-            [cathodeZ, cathodeZ],
-            color = 'black', ls = '--')
-
-
-def plot_track(ax, track, f, plotHits = False):
-
-    draw_boundaries(ax)
-
-    event = f['events'][track['event_ref']]
-    t0 = event['ts_start']
-
-    hits = f['hits'][track['hit_ref']]
     q = hits['q']
-
-    if plotHits:
-        pos3d = hit_to_3d(hits, event)
-        ax.scatter(*pos3d, c = q)
+    if debug:
+        color = ['blue' if hit['iogroup'] == 1 else 'red' if hit['iogroup'] == 2 else 'yellow'
+                 for hit in hits]
+    else:
+        color = q
+        
+    ax.scatter(*pos3d, c = color)
     
-    start = np.array([track['start'][0],
-                      track['start'][1],
-                      track['start'][2]])
-    end = np.array([track['end'][0],
-                    track['end'][1],
-                    track['end'][2]])
+def plot_track(ax, track, f):
+    start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                      track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                      track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+    end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                    track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                    track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+
     ax.scatter(*start,
                c = 'r')
     ax.scatter(*end,
@@ -107,6 +92,9 @@ def plot_track(ax, track, f, plotHits = False):
             c = 'g')
 
 def main(args):
+    global my_geometry
+    my_geometry = DetectorGeometry(args.d, args.g)
+    
     f = h5py.File(args.infile, 'r')
 
     rawTracks = np.array(f['tracks'])
@@ -119,8 +107,16 @@ def main(args):
     fig = plt.figure() 
     ax = fig.add_subplot(111, projection = '3d') 
 
+    ax.set_xlabel(r'x (horizontal) [mm]')
+    ax.set_ylabel(r'y (vertical) [mm]')
+    ax.set_zlabel(r'z (drift) [mm]')
+    
+    draw_boundaries(ax)
     for thisTrack in tracks[:args.n]:
-        plot_track(ax, thisTrack, f, plotHits = True) 
+        plot_track(ax, thisTrack, f)
+
+        hits = f['hits'][thisTrack['hit_ref']]
+        plot_hits(ax, hits, thisTrack)
 
     if args.o:
         plt.savefig(args.o, dpi = 300)
@@ -140,6 +136,14 @@ if __name__ == '__main__':
                         default = 10,
                         type = int,
                         help = 'plot the first n tracks (default 10)')
+    parser.add_argument('-g',
+                        default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
+                        type = str,
+                        help = 'path to the pixel layout YAML')
+    parser.add_argument('-d',
+                        default = './detector_properties/module0.yaml',
+                        type = str,
+                        help = 'path to the detector properties YAML')
     parser.add_argument('-o',
                         default = '',
                         type = str,
