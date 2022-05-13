@@ -64,8 +64,14 @@ def draw_boundaries(ax):
                 color = 'black', ls = '--')
 
         
-def plot_hits(ax, hits, track):
-    pos3d = hit_to_3d(my_geometry, hits, track['t0'])
+def plot_hits(ax, hits, track = None):
+    if track:
+        t0 = track['t0']
+    else:
+        event = f['events'][hits[0]['event_ref']]
+        t0 = event['ts_start']
+    
+    pos3d = hit_to_3d(my_geometry, hits, t0)
 
     q = hits['q']
     if debug:
@@ -94,15 +100,9 @@ def plot_track(ax, track, f):
 def main(args):
     global my_geometry
     my_geometry = DetectorGeometry(args.d, args.g)
-    
+
+    global f
     f = h5py.File(args.infile, 'r')
-
-    rawTracks = np.array(f['tracks'])
-
-    trackMask = np.logical_and(rawTracks['length'] > 300,
-                               rawTracks['nhit'] > 0) # more variables to cut on here
-
-    tracks = rawTracks[trackMask]
     
     fig = plt.figure() 
     ax = fig.add_subplot(111, projection = '3d') 
@@ -112,11 +112,36 @@ def main(args):
     ax.set_zlabel(r'z (drift) [mm]')
     
     draw_boundaries(ax)
-    for thisTrack in tracks[:args.n]:
-        plot_track(ax, thisTrack, f)
 
-        hits = f['hits'][thisTrack['hit_ref']]
-        plot_hits(ax, hits, thisTrack)
+    if args.e > 0:
+        # events = np.array(f['events'])
+        # eventMask = (events['evid'] == args.e)
+        # print (args.e)
+        # thisEvent = events[eventMask]
+        thisEvent = np.array(f['events'])[args.e]
+
+        print ("this event has " + str(thisEvent['n_ext_trigs']) + " external triggers") 
+
+        hits = f['hits'][thisEvent['hit_ref']]
+
+        plot_hits(ax, hits)
+
+        for ti in range(thisEvent['ntracks']):
+            thisTrack = f['tracks'][thisEvent['track_ref']][ti]
+            plot_track(ax, thisTrack, f)
+    
+    else:
+        rawTracks = np.array(f['tracks'])
+        trackMask = np.logical_and(rawTracks['length'] > 300,
+                                   rawTracks['nhit'] > 0) # more variables to cut on here
+        tracks = rawTracks[trackMask]
+
+
+        for thisTrack in tracks[:args.n]:
+            plot_track(ax, thisTrack, f)
+
+            hits = f['hits'][thisTrack['hit_ref']]
+            plot_hits(ax, hits, thisTrack)
 
     if args.o:
         plt.savefig(args.o, dpi = 300)
@@ -132,6 +157,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot the first N tracks from a given file')
     parser.add_argument('infile',
                         help = 'intput larpix data with track reconstruction')
+    parser.add_argument('-e',
+                        default = -1,
+                        type = int,
+                        help = 'plot the event with this evid (default, plot tracks)')
     parser.add_argument('-n',
                         default = 10,
                         type = int,

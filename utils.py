@@ -4,8 +4,6 @@ import yaml
 import consts
 from consts import detector
 
-vd = 1.62 # mm/us
-drift_dist = 310. # mm
 clock_interval = 0.1 # us
 
 def hit_to_3d(geometry, hits, last_trigger):
@@ -30,11 +28,11 @@ def hit_to_3d(geometry, hits, last_trigger):
 
         io_group = io_group - (io_group - 1)//4*4
         x,y = geometry.geometry[(io_group, io_channel, chip, channel)]
-
+        
         hits_pos[0].append(x + x_offset)
         hits_pos[1].append(y + y_offset)
-        hits_pos[2].append(geometry.get_z_coordinate(io_group, io_channel, hit['ts'] - last_trigger) + z_offset)
-        
+        hits_pos[2].append(geometry.get_z_coordinate(io_group, io_channel, clock_interval*(hit['ts'] - last_trigger)) + z_offset)
+
     return hits_pos
 
 class DetectorGeometry():
@@ -104,13 +102,13 @@ class DetectorGeometry():
                 x += self.tile_positions[tile][2]
                 y += self.tile_positions[tile][1]
                 self.geometry[(io_group, io_channel, chip, channel)] = x, y
-
+                
     def get_z_coordinate(self, io_group, io_channel, time):
         tile_id = self.get_tile_id(io_group, io_channel)
 
         z_anode = self.tile_positions[tile_id][0]
         drift_direction = self.tile_orientations[tile_id][0]
-        return z_anode + time * detector.V_DRIFT * drift_direction
+        return z_anode + time * detector.V_DRIFT * drift_direction * detector.cm/detector.mm
 
     def get_tile_id(self, io_group, io_channel):
         if (io_group, io_channel) in self.io_group_io_channel_to_tile:
