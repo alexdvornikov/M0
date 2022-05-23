@@ -62,38 +62,7 @@ def draw_boundaries(ax):
                 [bounds[1][1], bounds[1][1]],
                 [bounds[2][0], bounds[2][1]],
                 color = 'black', ls = '--')
-        
-def track_selection(track, f):
-
-    #TPC dims
-    for ix in range(detector.TPC_BORDERS.shape[0]):
-        bounds = detector.TPC_BORDERS[ix]*10 #in mm
-
-
-    start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
-                      track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
-                      track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
-    end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
-                    track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
-                    track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
-
-    p1_x,p1_y,p1_z = start[0],start[1],start[2]
-    p2_x,p2_y,p2_z = end[0],end[1],end[2]
-    
-    # Distances in mm
-    epsilon = 10
-    z_bound = bounds[0][1]
-    y_top, y_bottom = bounds[1][1], bounds[1][0]
-    
-    if (
-        ( (abs(abs(p1_z) - z_bound) < epsilon) ) and # Near either anode (in z)
-        ( (abs(p2_y - y_top) < epsilon) ) and # Near top face (in y)
-        ( abs(p1_z) - abs(p2_z) > 2*epsilon ) and # Give it some angle (avoid endpoints with nearby zs, parlle with the anode)
-        ( abs(p1_z) < (z_bound + 2*epsilon) and abs(p2_z) < (z_bound +2*epsilon) ) # Make sure thhat both z endpoints are within the TPC. 
-    ):
-        return True 
-
-        
+                
 def plot_hits(ax, hits, track = None):
     if track:
         t0 = track['t0']
@@ -143,41 +112,31 @@ def main(args):
     
     draw_boundaries(ax)
     
-    for thisTrack in tracks[:args.n]:
-        if track_selection(thisTrack, f):
-        #     plot_track(ax, thisTrack, f)
+    if args.e > 0:
+        thisEvent = np.array(f['events'])[args.e]
+
+        print ("this event has " + str(thisEvent['n_ext_trigs']) + " external triggers") 
+
+        hits = f['hits'][thisEvent['hit_ref']]
+
+        plot_hits(ax, hits)
+
+        for ti in range(thisEvent['ntracks']):
+            thisTrack = f['tracks'][thisEvent['track_ref']][ti]
+            plot_track(ax, thisTrack, f)
+    
+    else:
+        rawTracks = np.array(f['tracks'])
+        trackMask = np.logical_and(rawTracks['length'] > 300,
+                                   rawTracks['nhit'] > 0) # more variables to cut on here
+        tracks = rawTracks[trackMask]
+
+
+        for thisTrack in tracks[:args.n]:
+            plot_track(ax, thisTrack, f)
+
             hits = f['hits'][thisTrack['hit_ref']]
             plot_hits(ax, hits, thisTrack)
-
-#     if args.e > 0:
-#         # events = np.array(f['events'])
-#         # eventMask = (events['evid'] == args.e)
-#         # print (args.e)
-#         # thisEvent = events[eventMask]
-#         thisEvent = np.array(f['events'])[args.e]
-
-#         print ("this event has " + str(thisEvent['n_ext_trigs']) + " external triggers") 
-
-#         hits = f['hits'][thisEvent['hit_ref']]
-
-#         plot_hits(ax, hits)
-
-#         for ti in range(thisEvent['ntracks']):
-#             thisTrack = f['tracks'][thisEvent['track_ref']][ti]
-#             plot_track(ax, thisTrack, f)
-    
-#     else:
-#         rawTracks = np.array(f['tracks'])
-#         trackMask = np.logical_and(rawTracks['length'] > 300,
-#                                    rawTracks['nhit'] > 0) # more variables to cut on here
-#         tracks = rawTracks[trackMask]
-
-
-#         for thisTrack in tracks[:args.n]:
-#             plot_track(ax, thisTrack, f)
-
-#             hits = f['hits'][thisTrack['hit_ref']]
-#             plot_hits(ax, hits, thisTrack)
 
     if args.o:
         plt.savefig(args.o, dpi = 300)
