@@ -7,13 +7,34 @@ import h5py
 from utils import *
 from plotting import *
 
-def track_selection(track, f):
+# Distances in mm
+epsilon = 10
+    
+def is_good_track(track, f):
+    # TODO: implement global track cuts (remove noise tracks)
+    return True
 
-    #TPC dims
-    for ix in range(detector.TPC_BORDERS.shape[0]):
-        bounds = detector.TPC_BORDERS[ix]*10 #in mm
+def is_anode_piercer(track, f):
+    # TODO: compare start and end points to anode z values
+    start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                      track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                      track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+    end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                    track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                    track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+    return True
 
+def is_cathode_piercer(track, f):
+    # TODO: compare start and end points to cathode z values
+    start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                      track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                      track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+    end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                    track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                    track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+    return True
 
+def is_side_piercer(track, f):
     start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
                       track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
                       track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
@@ -21,21 +42,40 @@ def track_selection(track, f):
                     track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
                     track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
 
-    p1_x,p1_y,p1_z = start[0],start[1],start[2]
-    p2_x,p2_y,p2_z = end[0],end[1],end[2]
+    print (detector.TPC_BORDERS*10)
     
-    # Distances in mm
-    epsilon = 10
-    z_bound = bounds[0][1]
-    y_top, y_bottom = bounds[1][1], bounds[1][0]
+    start_near_xLow_wall = abs(start[0] - bounds[0][0]) < epsilon
+    start_near_xHigh_wall = abs(start[0] - bounds[0][1]) < epsilon
+
+    start_near_yLow_wall = abs(start[1] - bounds[1][0]) < epsilon
+    start_near_yHigh_wall = abs(start[1] - bounds[1][1]) < epsilon
+
+    start_near_wall = (start_near_xLow_wall or
+                       start_near_xHigh_wall or
+                       start_near_yLow_wall or
+                       start_near_yHigh_wall)
     
-    if (
-        ( (abs(abs(p1_z) - z_bound) < epsilon) ) and # Near either anode (in z)
-        ( (abs(p2_y - y_top) < epsilon) ) and # Near top face (in y)
-        ( abs(p1_z) - abs(p2_z) > 2*epsilon ) and # Give it some angle (avoid endpoints with nearby zs, parlle with the anode)
-        ( abs(p1_z) < (z_bound + 2*epsilon) and abs(p2_z) < (z_bound +2*epsilon) ) # Make sure thhat both z endpoints are within the TPC. 
-    ):
-        return True 
+    end_near_xLow_wall = abs(end[0] - bounds[0][0]) < epsilon
+    end_near_xHigh_wall = abs(end[0] - bounds[0][1]) < epsilon
+
+    end_near_yLow_wall = abs(end[1] - bounds[1][0]) < epsilon
+    end_near_yHigh_wall = abs(end[1] - bounds[1][1]) < epsilon
+
+    end_near_wall = (end_near_xLow_wall or
+                     end_near_xHigh_wall or
+                     end_near_yLow_wall or
+                     end_near_yHigh_wall)
+
+    return 
+
+def is_wall_piercer(track, f):
+    return bool(np.sum([is_side_piercer(track, f),
+                        is_anode_piercer(track, f),
+                        is_cathode_piercer(track, f)], axis = -1))
+
+def track_selection(track, f):
+    # TODO: this function is the ultimate filter
+    return is_wall_piercer(track, f)
 
 def main(args):
     global my_geometry
@@ -47,10 +87,6 @@ def main(args):
     fig = plt.figure() 
     ax = fig.add_subplot(111, projection = '3d') 
 
-    ax.set_xlabel(r'x (horizontal) [mm]')
-    ax.set_ylabel(r'y (vertical) [mm]')
-    ax.set_zlabel(r'z (drift) [mm]')
-    
     draw_boundaries(ax)
 
     rawTracks = np.array(f['tracks'])
@@ -59,33 +95,27 @@ def main(args):
     tracks = rawTracks[trackMask]
     
     for thisTrack in tracks[:args.n]:
-        if track_selection(thisTrack, f):
+        # if track_selection(thisTrack, f):
         #     plot_track(ax, thisTrack, f)
-            hits = f['hits'][thisTrack['hit_ref']]
-            plot_hits(ax, hits, thisTrack)
-
+        hits = f['hits'][thisTrack['hit_ref']]
+        plot_hits(ax, hits, my_geometry, thisTrack)
+        print ("this track passes the cuts: " + str(track_selection(thisTrack, f)))
+        
     if args.o:
         plt.savefig(args.o, dpi = 300)
     else:
         plt.show() 
 
 if __name__ == '__main__': 
-    # Plot 10 tracks that are > 30 cm.
-    # Assuming you downloaded a file from
-    # https://portal.nersc.gov/project/dune/data/Module0/TPC1+2/dataRuns/tracksData/
     import argparse
 
     parser = argparse.ArgumentParser(description='Plot the first N tracks from a given file')
     parser.add_argument('infile',
                         help = 'intput larpix data with track reconstruction')
-    parser.add_argument('-e',
-                        default = -1,
-                        type = int,
-                        help = 'plot the event with this evid (default, plot tracks)')
     parser.add_argument('-n',
                         default = 10,
                         type = int,
-                        help = 'plot the first n tracks (default 10)')
+                        help = 'evaluate the selection criteria over the first N tracks')
     parser.add_argument('-g',
                         default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
                         type = str,
@@ -97,7 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('-o',
                         default = '',
                         type = str,
-                        help = 'save the output plot to a file')
+                        help = 'save the data which passes the selection to a file')
 
     args = parser.parse_args()
 

@@ -62,15 +62,19 @@ def draw_boundaries(ax):
                 [bounds[1][1], bounds[1][1]],
                 [bounds[2][0], bounds[2][1]],
                 color = 'black', ls = '--')
-                
-def plot_hits(ax, hits, track = None):
+
+    ax.set_xlabel(r'x (horizontal) [mm]')
+    ax.set_ylabel(r'y (vertical) [mm]')
+    ax.set_zlabel(r'z (drift) [mm]')
+        
+def plot_hits(ax, hits, geometry, track = None):
     if track:
         t0 = track['t0']
     else:
         event = f['events'][hits[0]['event_ref']]
         t0 = event['ts_start']
     
-    pos3d = hit_to_3d(my_geometry, hits, t0)
+    pos3d = hit_to_3d(geometry, hits, t0)
 
     q = hits['q']
     if debug:
@@ -106,10 +110,6 @@ def main(args):
     fig = plt.figure() 
     ax = fig.add_subplot(111, projection = '3d') 
 
-    ax.set_xlabel(r'x (horizontal) [mm]')
-    ax.set_ylabel(r'y (vertical) [mm]')
-    ax.set_zlabel(r'z (drift) [mm]')
-    
     draw_boundaries(ax)
     
     if args.e > 0:
@@ -119,7 +119,7 @@ def main(args):
 
         hits = f['hits'][thisEvent['hit_ref']]
 
-        plot_hits(ax, hits)
+        plot_hits(ax, hits, my_geometry)
 
         for ti in range(thisEvent['ntracks']):
             thisTrack = f['tracks'][thisEvent['track_ref']][ti]
@@ -136,7 +136,7 @@ def main(args):
             plot_track(ax, thisTrack, f)
 
             hits = f['hits'][thisTrack['hit_ref']]
-            plot_hits(ax, hits, thisTrack)
+            plot_hits(ax, hits, my_geometry, thisTrack)
 
     if args.o:
         plt.savefig(args.o, dpi = 300)
