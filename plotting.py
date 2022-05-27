@@ -100,6 +100,10 @@ def plot_track(ax, track, f):
     ax.plot(*zip(start, end),
             c = 'g')
 
+def plot_selected_track(ax, track_start,track_end):
+    ax.plot(*zip(track_start, track_end),
+            c='k', alpha = 0.5)
+
 def main(args):
     global my_geometry
     my_geometry = DetectorGeometry(args.d, args.g)

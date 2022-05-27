@@ -9,56 +9,12 @@ import h5py
 from utils import *
 from plotting import *
 
-
-#------------------------------------------------------------------------------#
-# Helper functions
-#------------------------------------------------------------------------------#
-
-def get_TPC_bounds():
-    bounds = []
-    for ix in range(detector.TPC_BORDERS.shape[0]):
-        bounds.append(detector.TPC_BORDERS[ix]*10)
-    return np.array( bounds )
-
-
-def get_track_ends(track, my_geometry):
-    track_start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
-                            track['start'][1] +my_geometry.tpc_offsets[0][1]*10,
-                            track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
-    track_end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
-                          track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
-                          track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
-    return track_start, track_end
-
-
-def shift_track_to_anode(track_start,track_end):
-
-    p1_z = track_start[2]
-    p2_z = track_end[2]
-
-    if p1_z > 0: #If first TPC (anode at positive z)
-        shift = anode_z - p1_z
-        p1_z_shifted = anode_z
-        p2_z_shifted = p2_z + shift
-
-    if p1_z < 0: #If second TPC (anode at negative z)
-        shift = anode_z - abs(p1_z) 
-        p1_z_shifted = -anode_z
-        p2_z_shifted = p2_z - shift
-
-    return p1_z_shifted, p2_z_shifted
-
-#------------------------------------------------------------------------------#
-# Selection functions
-#------------------------------------------------------------------------------#
-
 def is_good_track(track_start,track_end):
     # Drift direction containment.
     # Parallel avoidance (ensure some separation in drift direction z).
     p1_z,p2_z = track_start[2], track_end[2]
-    if ( ( abs(p1_z) < (anode_z + epsilon) and abs(p2_z) < (anode_z + epsilon) ) and
-        ( (abs(p1_z) - abs(p2_z) > epsilon) ) ):
-        return True
+    return ( ( abs(p1_z) < (anode_z + epsilon) and abs(p2_z) < (anode_z + epsilon) ) and
+             ( (abs(p1_z) - abs(p2_z) > epsilon) ) )
 
 def is_cathode_piercer(track):
     # TODO: compare start and end points to cathode z values
@@ -67,33 +23,27 @@ def is_cathode_piercer(track):
 
 def is_anode_piercer(p1_z,p2_z):
     # Using two abs() successively checks both anodes. 
-    if ( abs(abs(p1_z) - anode_z) < epsilon ):
-        return True
-
+    return ( abs(abs(p1_z) - anode_z) < epsilon )
+        
 def is_top_piercer(p1_y,p2_y):
-    if ( abs(p2_y - top) < epsilon ):
-        return True
+    return ( abs(p2_y - top) < epsilon )
 
 def is_bottom_piercer(p1_y,p2_y):
-    if ( abs(p2_y - bottom) < epsilon ):
-        return True
-
+    return ( abs(p2_y - bottom) < epsilon )
+        
 def is_upstream_piercer(p1_x,p2_x):
-    if ( abs(p2_x - upstream) < epsilon ):
-        return True
-
+    return ( abs(p2_x - upstream) < epsilon )
+        
 def is_downstream_piercer(p1_x,p2_x):
-    if ( abs(p2_x - downstream) < epsilon ):
-        return True
-
+    return ( abs(p2_x - downstream) < epsilon )
+        
 def is_side_piercer(track_start, track_end):
     p1_x, p1_y, p1_z = track_start
     p2_x, p2_y, p2_z = track_end
-    if ( is_downstream_piercer(p1_x,p2_x) or
-        is_upstream_piercer(p1_x,p2_x) or
-        is_bottom_piercer(p1_y,p2_y) or
-        is_top_piercer(p1_y,p2_y) ):
-        return True
+    return ( is_downstream_piercer(p1_x,p2_x) or
+             is_upstream_piercer(p1_x,p2_x) or
+             is_bottom_piercer(p1_y,p2_y) or
+             is_top_piercer(p1_y,p2_y) )
 
 # def is_wall_piercer(track_start,track_end):
 #     p1_x, p1_y, p1_z = track_start
@@ -115,18 +65,6 @@ def track_selection(track_start,track_end):
         is_downstream_piercer(p1_x,p2_x)):
         return True
 
-#------------------------------------------------------------------------------#
-# Plotting
-#------------------------------------------------------------------------------#
-def plot_selected_track(ax, track_start,track_end):
-    ax.plot(*zip(track_start, track_end),c='k',alpha = 0.5)
-
-
-
-
-#------------------------------------------------------------------------------#
-# Where the magic happens.
-#------------------------------------------------------------------------------#
 def main(args):
     global my_geometry
     global TPC_bounds, anode_z, top, bottom, upstream, downstream
@@ -165,19 +103,34 @@ def main(args):
     trackMask = np.logical_and(rawTracks['length'] > length_cut,
                                rawTracks['nhit'] > 0) # more variables to cut on here
     tracks = rawTracks[trackMask]
+    events = f['events']
+
     # print(tracks.size)
     # print(100*(tracks.size/rawTracks.size))
     
     passing_counter = 0
     for thisTrack in tracks[:args.n]:
-        track_start,track_end = get_track_ends(thisTrack,my_geometry)
-        p1_z_shifted, p2_z_shifted = shift_track_to_anode(track_start,track_end)
-        shifted_start = [ track_start[0], track_start[1], p1_z_shifted ]
-        shifted_end = [ track_end[0], track_end[1], p2_z_shifted ]
+        thisEvent = events[thisTrack['event_ref']]
 
-        if track_selection(shifted_start,shifted_end):
+        if thisEvent['n_ext_trigs'] < 2:
+            track_start,track_end = get_track_ends(thisTrack, my_geometry)
+            p1_z_shifted, p2_z_shifted = shift_track_to_anode(track_start,
+                                                              track_end,
+                                                              anode_z)
+            corrected_start = [track_start[0],
+                               track_start[1],
+                               p1_z_shifted]
+            corrected_end = [track_end[0],
+                             track_end[1],
+                             p2_z_shifted]
+        else:
+            corrected_start, corrected_end = get_track_ends(thisTrack, my_geometry)
+            
+        if track_selection(corrected_start, corrected_end):
             passing_counter += 1
-            plot_selected_track(ax, shifted_start,shifted_end)
+            plot_selected_track(ax,
+                                corrected_start,
+                                corrected_end)
         # hits = f['hits'][thisTrack['hit_ref']]
         # plot_hits(ax, hits, my_geometry, thisTrack)
         # print ("this track passes the cuts: " + str(track_selection(thisTrack, f)))
@@ -201,11 +154,6 @@ def main(args):
     else:
         plt.show() 
 
-
-
-#------------------------------------------------------------------------------#
-# Argument parsing
-#------------------------------------------------------------------------------#
 if __name__ == '__main__': 
     import argparse
 

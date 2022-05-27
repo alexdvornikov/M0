@@ -35,6 +35,38 @@ def hit_to_3d(geometry, hits, last_trigger):
 
     return hits_pos
 
+def get_TPC_bounds():
+    bounds = []
+    for ix in range(detector.TPC_BORDERS.shape[0]):
+        bounds.append(detector.TPC_BORDERS[ix]*10)
+    return np.array( bounds )
+
+def get_track_ends(track, my_geometry):
+    track_start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                            track['start'][1] +my_geometry.tpc_offsets[0][1]*10,
+                            track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+    track_end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                          track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                          track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+    return track_start, track_end
+
+def shift_track_to_anode(track_start, track_end, anode_z):
+
+    p1_z = track_start[2]
+    p2_z = track_end[2]
+
+    if p1_z > 0: #If first TPC (anode at positive z)
+        shift = anode_z - p1_z
+        p1_z_shifted = anode_z
+        p2_z_shifted = p2_z + shift
+
+    if p1_z < 0: #If second TPC (anode at negative z)
+        shift = anode_z - abs(p1_z) 
+        p1_z_shifted = -anode_z
+        p2_z_shifted = p2_z - shift
+
+    return p1_z_shifted, p2_z_shifted
+
 class DetectorGeometry():
     """Class describing the geometry of the Detector"""
 
