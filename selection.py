@@ -105,11 +105,15 @@ def main(args):
     tracks = rawTracks[trackMask]
     events = f['events']
 
+    if args.n >= 0:
+        N = args.n
+    else:
+        N = len(tracks)
     # print(tracks.size)
     # print(100*(tracks.size/rawTracks.size))
     
     passing_counter = 0
-    for thisTrack in tracks[:args.n]:
+    for thisTrack in tracks[:N]:
         thisEvent = events[thisTrack['event_ref']]
 
         if thisEvent['n_ext_trigs'] < 2:
@@ -161,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('infile',
                         help = 'intput larpix data with track reconstruction')
     parser.add_argument('-n',
-                        default = 10,
+                        default = -1,
                         type = int,
                         help = 'evaluate the selection criteria over the first N tracks')
     parser.add_argument('-g',
