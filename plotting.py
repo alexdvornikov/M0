@@ -67,7 +67,7 @@ def draw_boundaries(ax):
     ax.set_ylabel(r'y (vertical) [mm]')
     ax.set_zlabel(r'z (drift) [mm]')
         
-def plot_hits(ax, hits, geometry, track = None):
+def plot_hits(ax, hits, f, geometry, track = None):
     if track:
         t0 = track['t0']
     else:
@@ -82,16 +82,16 @@ def plot_hits(ax, hits, geometry, track = None):
                  for hit in hits]
     else:
         color = q
-        
+
     ax.scatter(*pos3d, c = color)
     
-def plot_track(ax, track, f):
-    start = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
-                      track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
-                      track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
-    end = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
-                    track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
-                    track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+def plot_track(ax, track, f, geo):
+    start = np.array([track['start'][0] + geo.tpc_offsets[0][0]*10,
+                      track['start'][1] + geo.tpc_offsets[0][1]*10,
+                      track['start'][2] + geo.tpc_offsets[0][2]*10])
+    end = np.array([track['end'][0] + geo.tpc_offsets[0][0]*10,
+                    track['end'][1] + geo.tpc_offsets[0][1]*10,
+                    track['end'][2] + geo.tpc_offsets[0][2]*10])
 
     ax.scatter(*start,
                c = 'r')
@@ -127,7 +127,7 @@ def main(args):
 
         for ti in range(thisEvent['ntracks']):
             thisTrack = f['tracks'][thisEvent['track_ref']][ti]
-            plot_track(ax, thisTrack, f)
+            plot_track(ax, thisTrack, f, my_geometry)
     
     else:
         rawTracks = np.array(f['tracks'])
@@ -137,7 +137,7 @@ def main(args):
 
 
         for thisTrack in tracks[:args.n]:
-            plot_track(ax, thisTrack, f)
+            plot_track(ax, thisTrack, f, my_geometry)
 
             hits = f['hits'][thisTrack['hit_ref']]
             plot_hits(ax, hits, my_geometry, thisTrack)

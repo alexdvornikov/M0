@@ -28,9 +28,10 @@ def hit_to_3d(geometry, hits, last_trigger):
         x_offset = geometry.tpc_offsets[module_id][0]*10
         y_offset = geometry.tpc_offsets[module_id][1]*10
         z_offset = geometry.tpc_offsets[module_id][2]*10
-
+        
         io_group = io_group - (io_group - 1)//4*4
-        x,y = geometry.geometry[(io_group, io_channel, chip, channel)]
+        # x,y = geometry.geometry[(io_group, io_channel, chip, channel)]
+        x,y = hit['px'], hit['py']
         
         hits_pos[0].append(x + x_offset)
         hits_pos[1].append(y + y_offset)
@@ -38,6 +39,22 @@ def hit_to_3d(geometry, hits, last_trigger):
 
     return hits_pos
 
+def get_extreme_hit_pos(track, hits, my_geometry):
+    trackStart = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                           track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                           track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+    trackEnd = np.array([track['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                         track['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                         track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
+    trackdl = trackEnd - trackStart
+    
+    hits3d = np.array(hit_to_3d(my_geometry, hits, track['t0']))
+
+    l = np.dot((hits3d.T - trackStart),trackdl)/np.dot(trackdl, trackdl)
+
+    return hits3d[:,np.argmin(l)], hits3d[:,np.argmax(l)]
+
+    
 def get_TPC_bounds():
     bounds = []
     for ix in range(detector.TPC_BORDERS.shape[0]):

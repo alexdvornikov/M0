@@ -70,7 +70,7 @@ def track_selection(track_start,track_end):
     if (is_good_track(track_start,track_end) and 
         is_anode_piercer(p1_z,p2_z) and
         is_cathode_piercer(p1_z, p2_z)):
-        # is_top_piercer(p1_y,p2_y) and 
+        # is_top_piercer(p1_y,p2_y)):
         # is_bottom_piercer(p1_y,p2_y)): # and 
          # is_upstream_piercer(p1_x,p2_x)): # and 
         # is_downstream_piercer(p1_x,p2_x)):
@@ -130,17 +130,17 @@ def main(args):
         thisEvent = events[thisTrack['event_ref']]
 
         if thisEvent['n_ext_trigs'] < 2:
-            # continue
-            track_start,track_end = get_track_ends(thisTrack, my_geometry)
-            p1_z_shifted, p2_z_shifted = shift_track_to_anode(track_start,
-                                                              track_end,
-                                                              anode_z)
-            corrected_start = [track_start[0],
-                               track_start[1],
-                               p1_z_shifted]
-            corrected_end = [track_end[0],
-                             track_end[1],
-                             p2_z_shifted]
+            continue
+            # track_start,track_end = get_track_ends(thisTrack, my_geometry)
+            # p1_z_shifted, p2_z_shifted = shift_track_to_anode(track_start,
+            #                                                   track_end,
+            #                                                   anode_z)
+            # corrected_start = [track_start[0],
+            #                    track_start[1],
+            #                    p1_z_shifted]
+            # corrected_end = [track_end[0],
+            #                  track_end[1],
+            #                  p2_z_shifted]
         else:
             corrected_start, corrected_end = get_track_ends(thisTrack, my_geometry)
             
@@ -149,8 +149,14 @@ def main(args):
             plot_selected_track(ax,
                                 corrected_start,
                                 corrected_end)
-            corrected_endpoints.append(corrected_start)
-            corrected_endpoints.append(corrected_end)
+
+            theseHits = f['hits'][thisTrack['hit_ref']]
+            startHitPos, endHitPos = get_extreme_hit_pos(thisTrack,
+                                                         theseHits,
+                                                         my_geometry)
+
+            corrected_endpoints.append(startHitPos)
+            corrected_endpoints.append(endHitPos)
         # hits = f['hits'][thisTrack['hit_ref']]
         # plot_hits(ax, hits, my_geometry, thisTrack)
         # print ("this track passes the cuts: " + str(track_selection(thisTrack, f)))
