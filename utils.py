@@ -6,6 +6,9 @@ from consts import detector
 
 clock_interval = 0.1 # us
 
+def approx_equals(x, bound, ep):
+    return np.abs(x - bound) < ep
+
 def hit_to_3d(geometry, hits, last_trigger):
 
     hits_pos = [[], [], []]

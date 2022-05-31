@@ -16,26 +16,36 @@ def is_good_track(track_start,track_end):
     return ( ( abs(p1_z) < (anode_z + epsilon) and abs(p2_z) < (anode_z + epsilon) ) and
              ( (abs(p1_z) - abs(p2_z) > epsilon) ) )
 
-def is_cathode_piercer(track):
-    # TODO: compare start and end points to cathode z values
-    # track_start,track_end = get_track_ends(track,f)
-    return 
-
+def is_cathode_piercer(p1_z, p2_z):
+    p1Cross = approx_equals(abs(p1_z), cathode_z, epsilon)
+    p2Cross = approx_equals(abs(p2_z), cathode_z, epsilon)
+    return p1Cross or p2Cross
+    
 def is_anode_piercer(p1_z,p2_z):
     # Using two abs() successively checks both anodes. 
-    return ( abs(abs(p1_z) - anode_z) < epsilon )
-        
+    p1Cross = approx_equals(abs(p1_z), anode_z, epsilon)
+    p2Cross = approx_equals(abs(p2_z), anode_z, epsilon)
+    return p1Cross or p2Cross
+    
 def is_top_piercer(p1_y,p2_y):
-    return ( abs(p2_y - top) < epsilon )
+    p1Cross = approx_equals(p1_y, top, epsilon)
+    p2Cross = approx_equals(p2_y, top, epsilon)
+    return p1Cross or p2Cross
 
 def is_bottom_piercer(p1_y,p2_y):
-    return ( abs(p2_y - bottom) < epsilon )
+    p1Cross = approx_equals(p1_y, bottom, epsilon)
+    p2Cross = approx_equals(p2_y, bottom, epsilon)
+    return p1Cross or p2Cross
         
 def is_upstream_piercer(p1_x,p2_x):
-    return ( abs(p2_x - upstream) < epsilon )
+    p1Cross = approx_equals(p1_x, upstream, epsilon)
+    p2Cross = approx_equals(p2_x, upstream, epsilon)
+    return p1Cross or p2Cross
         
 def is_downstream_piercer(p1_x,p2_x):
-    return ( abs(p2_x - downstream) < epsilon )
+    p1Cross = approx_equals(p1_x, downstream, epsilon)
+    p2Cross = approx_equals(p2_x, downstream, epsilon)
+    return p1Cross or p2Cross
         
 def is_side_piercer(track_start, track_end):
     p1_x, p1_y, p1_z = track_start
@@ -57,30 +67,33 @@ def track_selection(track_start,track_end):
     # Toggle desirable/undesirable conditions below. 
     p1_x, p1_y, p1_z = track_start
     p2_x, p2_y, p2_z = track_end
-    if ( is_good_track(track_start,track_end) and 
-        is_anode_piercer(p1_z,p2_z) and 
+    if (is_good_track(track_start,track_end) and 
+        is_anode_piercer(p1_z,p2_z) and
+        is_cathode_piercer(p1_z, p2_z)):
         # is_top_piercer(p1_y,p2_y) and 
-        # is_bottom_piercer(p1_y,p2_y) and 
-        # is_upstream_piercer(p1_x,p2_x) and 
-        is_downstream_piercer(p1_x,p2_x)):
+        # is_bottom_piercer(p1_y,p2_y)): # and 
+         # is_upstream_piercer(p1_x,p2_x)): # and 
+        # is_downstream_piercer(p1_x,p2_x)):
         return True
 
 def main(args):
     global my_geometry
-    global TPC_bounds, anode_z, top, bottom, upstream, downstream
+    global TPC_bounds, anode_z, cathode_z, top, bottom, upstream, downstream
     global passing_counter
     global length_cut
     global epsilon
 
     my_geometry = DetectorGeometry(args.d, args.g)
     TPC_bounds = get_TPC_bounds()
-    anode_z = TPC_bounds[0][0][1]
+    anode_z = TPC_bounds[1][2][0]
+    cathode_z = TPC_bounds[1][2][1]
     top = TPC_bounds[0][1][1]
     bottom = TPC_bounds[0][1][0]
     upstream = TPC_bounds[0][0][1]
     downstream = TPC_bounds[0][0][0]
     length_cut = 100 #mm
-    epsilon = 50 #mm
+    # epsilon = 50 #mm
+    epsilon = 10 #mm
 
     global f
     f = h5py.File(args.infile, 'r')
@@ -109,14 +122,15 @@ def main(args):
         N = args.n
     else:
         N = len(tracks)
-    # print(tracks.size)
-    # print(100*(tracks.size/rawTracks.size))
+
+    corrected_endpoints = []
     
     passing_counter = 0
     for thisTrack in tracks[:N]:
         thisEvent = events[thisTrack['event_ref']]
 
         if thisEvent['n_ext_trigs'] < 2:
+            # continue
             track_start,track_end = get_track_ends(thisTrack, my_geometry)
             p1_z_shifted, p2_z_shifted = shift_track_to_anode(track_start,
                                                               track_end,
@@ -135,6 +149,8 @@ def main(args):
             plot_selected_track(ax,
                                 corrected_start,
                                 corrected_end)
+            corrected_endpoints.append(corrected_start)
+            corrected_endpoints.append(corrected_end)
         # hits = f['hits'][thisTrack['hit_ref']]
         # plot_hits(ax, hits, my_geometry, thisTrack)
         # print ("this track passes the cuts: " + str(track_selection(thisTrack, f)))
@@ -152,18 +168,19 @@ def main(args):
     ax.text2D(0.05, 0.90, text2, transform=ax.transAxes)
     ax.text2D(0.05, 0.0, text3, transform=ax.transAxes)
 
-
     if args.o:
-        plt.savefig(args.o, dpi = 300)
-    else:
-        plt.show() 
+        np.save(args.o, corrected_endpoints)
+        # plt.savefig(args.o, dpi = 300)
+    # else:
+    #     plt.show()
+    plt.show()
 
 if __name__ == '__main__': 
     import argparse
 
     parser = argparse.ArgumentParser(description='Plot the first N tracks from a given file')
     parser.add_argument('infile',
-                        help = 'intput larpix data with track reconstruction')
+                        help = 'input larpix data with track reconstruction')
     parser.add_argument('-n',
                         default = -1,
                         type = int,
