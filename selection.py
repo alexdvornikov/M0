@@ -103,8 +103,8 @@ def main(args):
     upstream = TPC_bounds[0][0][1]
     downstream = TPC_bounds[0][0][0]
     length_cut = 100 #mm
-    # epsilon = 50 #mm
-    epsilon = 10 #mm
+    epsilon = 50 #mm
+    # epsilon = 10 #mm
 
     global f
     f = h5py.File(args.infile, 'r')

@@ -1,9 +1,10 @@
 import os
 import argparse
 
-def main(indir, runlist, nfiles, outdir):
+def main(indir, runlist, cut, nfiles, outdir):
     print ("input directory: " + indir)
     print ("runlist file: " + runlist)
+    print ("cut string: " + cut)
     print ("to be processed: " + str(nfiles))
     print ("output directory: " + outdir)
 
@@ -38,7 +39,8 @@ def main(indir, runlist, nfiles, outdir):
 
                 sbatch_cmd = " ".join(["sbatch ./selection_batch.sh",
                                        infileName,
-                                       outfileName])
+                                       outfileName,
+                                       cut])
                 os.system(sbatch_cmd)
 
                 n_launched += 1
@@ -55,6 +57,9 @@ if __name__ == '__main__':
 			required=True,
 			type=str)
     parser.add_argument('--runlist','-r',
+			required=True,
+			type=str)
+    parser.add_argument('--cut','-c',
 			required=True,
 			type=str)
     parser.add_argument('--nfiles','-n',
