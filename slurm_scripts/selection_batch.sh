@@ -11,10 +11,11 @@
 #
 #SBATCH --time=2:00:00
 
+PYTHON_EXEC=/global/homes/d/ddouglas/.conda/envs/larnd-sim-dev/bin/python3
 SCRIPTS_PATH=/global/project/projectdirsdune/users/ddouglas/M0
 
 INFILE=$1
 OUTFILE=$3
 
-COMMAND="/usr/bin/python3 $SCRIPTS_PATH/selection.py -i $INFILE -o $OUTFILE"
+COMMAND="$PYTHON_EXEC $SCRIPTS_PATH/selection.py -i $INFILE -o $OUTFILE"
 
