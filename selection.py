@@ -98,7 +98,7 @@ def main(args):
     if args.p:
         import matplotlib.pyplot as plt
         from mpl_toolkits import mplot3d as plt3d
-        from plotting import *
+        from plotting import draw_boundaries, plot_selected_track
         
         fig = plt.figure() 
         ax = fig.add_subplot(111, projection = '3d') 
