@@ -1,13 +1,10 @@
 # python3 selection.py ~/Desktop/Desktop/datalog_2021_04_03_20_01_46_CESTevd.h5 -n 1000
 
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d as plt3d
 
 import h5py
 
 from utils import *
-from plotting import *
 
 def is_good_track(track_start,track_end):
     # Drift direction containment.
@@ -99,6 +96,10 @@ def main(args):
     f = h5py.File(args.infile, 'r')
     
     if args.p:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits import mplot3d as plt3d
+        from plotting import *
+        
         fig = plt.figure() 
         ax = fig.add_subplot(111, projection = '3d') 
         ax.set_xlabel(r'x (horizontal) [mm]')
