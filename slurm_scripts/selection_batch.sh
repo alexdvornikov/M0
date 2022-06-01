@@ -5,7 +5,7 @@
 #SBATCH --error=output-$1-%j.txt
 #
 #SBATCH --ntasks=1
-#SBATCH --cups-per-task=1
+#SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=1g
 #
 #SBATCH --time=2:00:00
