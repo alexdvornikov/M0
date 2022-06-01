@@ -6,40 +6,58 @@ import h5py
 
 from utils import *
 
-def is_good_track(track_start,track_end):
+def is_good_track(track_start, track_end):
     # Drift direction containment.
     # Parallel avoidance (ensure some separation in drift direction z).
     p1_z,p2_z = track_start[2], track_end[2]
     return ( ( abs(p1_z) < (anode_z + epsilon) and abs(p2_z) < (anode_z + epsilon) ) and
              ( (abs(p1_z) - abs(p2_z) > epsilon) ) )
 
-def is_cathode_piercer(p1_z, p2_z):
+def is_cathode_piercer(track_start, track_end):
+    p1_z = track_start[2]
+    p2_z = track_end[2]
+
     p1Cross = approx_equals(abs(p1_z), cathode_z, epsilon)
     p2Cross = approx_equals(abs(p2_z), cathode_z, epsilon)
     return p1Cross or p2Cross
     
-def is_anode_piercer(p1_z,p2_z):
+def is_anode_piercer(track_start, track_end):
+    p1_z = track_start[2]
+    p2_z = track_end[2]
+
     # Using two abs() successively checks both anodes. 
     p1Cross = approx_equals(abs(p1_z), anode_z, epsilon)
     p2Cross = approx_equals(abs(p2_z), anode_z, epsilon)
     return p1Cross or p2Cross
     
-def is_top_piercer(p1_y,p2_y):
+def is_top_piercer(track_start, track_end):
+    p1_y = track_start[1]
+    p2_y = track_end[1]
+
     p1Cross = approx_equals(p1_y, top, epsilon)
     p2Cross = approx_equals(p2_y, top, epsilon)
     return p1Cross or p2Cross
 
-def is_bottom_piercer(p1_y,p2_y):
+def is_bottom_piercer(track_start, track_end):
+    p1_y = track_start[1]
+    p2_y = track_end[1]
+
     p1Cross = approx_equals(p1_y, bottom, epsilon)
     p2Cross = approx_equals(p2_y, bottom, epsilon)
     return p1Cross or p2Cross
         
-def is_upstream_piercer(p1_x,p2_x):
+def is_upstream_piercer(track_start, track_end):
+    p1_x = track_start[0]
+    p2_x = track_end[0]
+
     p1Cross = approx_equals(p1_x, upstream, epsilon)
     p2Cross = approx_equals(p2_x, upstream, epsilon)
     return p1Cross or p2Cross
         
-def is_downstream_piercer(p1_x,p2_x):
+def is_downstream_piercer(track_start, track_end):
+    p1_x = tracK_start[0]
+    p2_x = track_end[0]
+
     p1Cross = approx_equals(p1_x, downstream, epsilon)
     p2Cross = approx_equals(p2_x, downstream, epsilon)
     return p1Cross or p2Cross
@@ -47,32 +65,29 @@ def is_downstream_piercer(p1_x,p2_x):
 def is_side_piercer(track_start, track_end):
     p1_x, p1_y, p1_z = track_start
     p2_x, p2_y, p2_z = track_end
-    return ( is_downstream_piercer(p1_x,p2_x) or
-             is_upstream_piercer(p1_x,p2_x) or
-             is_bottom_piercer(p1_y,p2_y) or
-             is_top_piercer(p1_y,p2_y) )
 
-# def is_wall_piercer(track_start,track_end):
-#     p1_x, p1_y, p1_z = track_start
-#     p2_x, p2_y, p2_z = track_end
-#     return bool(np.sum([is_side_piercer(track_start,track_end),
-#                         is_anode_piercer(p1_z,p2_z),
-#                         is_cathode_piercer(track)], axis = -1))
+    return ( is_downstream_piercer(track_start, track_end) or
+             is_upstream_piercer(track_start, track_end) or
+             is_bottom_piercer(track_start, track_end) or
+             is_top_piercer(track_start, track_end) )
 
-def track_selection(track_start,track_end):
+def track_selection(track_start, track_end, cutString):
     # This function is the ultimate filter.
-    # Toggle desirable/undesirable conditions below. 
-    p1_x, p1_y, p1_z = track_start
-    p2_x, p2_y, p2_z = track_end
-    if (is_good_track(track_start,track_end) and 
-        # is_anode_piercer(p1_z,p2_z) and
-        # is_cathode_piercer(p1_z, p2_z)):
-        # is_top_piercer(p1_y,p2_y)):
-        # is_bottom_piercer(p1_y,p2_y)): # and 
-        is_upstream_piercer(p1_x,p2_x)): 
-        # is_downstream_piercer(p1_x,p2_x)):
-        return True
+    # Toggle desirable/undesirable conditions below.
+    conditional_funcs = [is_good_track]
 
+    if 'upstream' in cutString:
+        conditional_funcs.append(is_upstream_piercer)
+    if 'downstream' in cutString:
+        conditional_funcs.append(is_downstream_piercer)
+    if 'top' in cutString:
+        conditional_funcs.append(is_top_piercer)
+    if 'bottom' in cutString:
+        conditional_funcs.append(is_bottom_piercer)
+        
+    return all(conditional(track_start, track_end)
+               for conditional in conditional_funcs)
+    
 def main(args):
     global my_geometry
     global TPC_bounds, anode_z, cathode_z, top, bottom, upstream, downstream
@@ -80,7 +95,7 @@ def main(args):
     global length_cut
     global epsilon
 
-    my_geometry = DetectorGeometry(args.d, args.g)
+    my_geometry = DetectorGeometry(args.detector, args.geometry)
     TPC_bounds = get_TPC_bounds()
     anode_z = TPC_bounds[1][2][0]
     cathode_z = TPC_bounds[1][2][1]
@@ -95,7 +110,7 @@ def main(args):
     global f
     f = h5py.File(args.infile, 'r')
     
-    if args.p:
+    if args.plot:
         import matplotlib.pyplot as plt
         from mpl_toolkits import mplot3d as plt3d
         from plotting import draw_boundaries, plot_selected_track
@@ -146,9 +161,9 @@ def main(args):
         else:
             corrected_start, corrected_end = get_track_ends(thisTrack, my_geometry)
             
-        if track_selection(corrected_start, corrected_end):
+        if track_selection(corrected_start, corrected_end, args.cut):
             passing_counter += 1
-            if args.p:
+            if args.plot:
                 plot_selected_track(ax,
                                     corrected_start,
                                     corrected_end)
@@ -167,9 +182,7 @@ def main(args):
     # print('Percentage of tracks over ' + str(length_cut) + '[mm] passing the cuts')
     # print(100*(passing_counter/tracks.size))
 
-    passing_fraction = round( 100*(passing_counter/tracks.size), 2 )
-
-    if args.p:
+    if args.plot:
         # Some helpful stats to print on the figure. 
         text = 'Number of tracks over ' + str(length_cut/10) + ' [cm] : ' + str(tracks.size)
         text2 = 'Percent of tracks over ' + str(length_cut/10) + ' [cm] passing the cuts: ' + str(passing_fraction) +'%'
@@ -178,9 +191,9 @@ def main(args):
         ax.text2D(0.05, 0.90, text2, transform=ax.transAxes)
         ax.text2D(0.05, 0.0, text3, transform=ax.transAxes)
 
-    if args.o:
-        np.save(args.o, corrected_endpoints)
-    if args.p:
+    if args.output:
+        np.save(args.output, corrected_endpoints)
+    if args.plot:
         plt.show()
 
 if __name__ == '__main__': 
@@ -193,22 +206,26 @@ if __name__ == '__main__':
                         default = -1,
                         type = int,
                         help = 'evaluate the selection criteria over the first N tracks')
-    parser.add_argument('-g',
+    parser.add_argument('-g', '--geometry',
                         default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
                         type = str,
                         help = 'path to the pixel layout YAML')
-    parser.add_argument('-d',
+    parser.add_argument('-d', '--detector',
                         default = './detector_properties/module0.yaml',
                         type = str,
                         help = 'path to the detector properties YAML')
-    parser.add_argument('-o',
+    parser.add_argument('-o', '--output',
                         default = '',
                         type = str,
                         help = 'save the data which passes the selection to a file')
-    parser.add_argument('-p',
+    parser.add_argument('-p', '--plot',
                         default = False,
                         type = bool,
                         help = 'show a plot of the selected tracks')
+    parser.add_argument('-c', '--cut',
+                        default = 'upstream',
+                        type = str,
+                        help = 'faces which tracks must intersect (upstream, downstream, top, bottom, cathode)')
 
     args = parser.parse_args()
 
