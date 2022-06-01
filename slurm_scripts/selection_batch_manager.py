@@ -19,6 +19,9 @@ def main(indir, runlist, nfiles, outdir):
 
     runConditions = {"e_field": 500,
                      "charge_thresholds": "high"}
+
+    if nfiles < 0:
+        nfiles = len(runMetaData)
         
     n_launched = 0
     for thisRun in runMetaData:
@@ -36,7 +39,7 @@ def main(indir, runlist, nfiles, outdir):
                 sbatch_cmd = " ".join(["sbatch ./selection_batch.sh",
                                        infileName,
                                        outfileName])
-                # os.system(sbatch_cmd)
+                os.system(sbatch_cmd)
 
                 n_launched += 1
 
@@ -55,7 +58,7 @@ if __name__ == '__main__':
 			required=True,
 			type=str)
     parser.add_argument('--nfiles','-n',
-			default = 10,
+			default = -1,
 			type=int)
     parser.add_argument('--outdir','-o',
 			required=True,
