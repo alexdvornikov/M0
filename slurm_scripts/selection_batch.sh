@@ -7,6 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=1g
+#SBATCH --constraint=haswell
 #
 #SBATCH --time=2:00:00
 
