@@ -48,7 +48,8 @@ def get_extreme_hit_pos(track, hits, my_geometry):
                          track['end'][2] + my_geometry.tpc_offsets[0][2]*10])
     trackdl = trackEnd - trackStart
     
-    hits3d = np.array(hit_to_3d(my_geometry, hits, track['t0']))
+    hits3d = np.array([thisHit for thisHit in hit_to_3d(my_geometry, hits, track['t0'])
+                       if not np.isnan(thisHit[2])])
 
     l = np.dot((hits3d.T - trackStart),trackdl)/np.dot(trackdl, trackdl)
 
@@ -158,9 +159,12 @@ class DetectorGeometry():
     def get_z_coordinate(self, io_group, io_channel, time):
         tile_id = self.get_tile_id(io_group, io_channel)
 
-        z_anode = self.tile_positions[tile_id][0]
-        drift_direction = self.tile_orientations[tile_id][0]
-        return z_anode + time * detector.V_DRIFT * drift_direction * detector.cm/detector.mm
+        if not np.isnan(tile_id):
+            z_anode = self.tile_positions[tile_id][0]
+            drift_direction = self.tile_orientations[tile_id][0]
+            return z_anode + time * detector.V_DRIFT * drift_direction * detector.cm/detector.mm
+        else:
+            return np.nan
 
     def get_tile_id(self, io_group, io_channel):
         if (io_group, io_channel) in self.io_group_io_channel_to_tile:

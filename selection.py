@@ -68,11 +68,11 @@ def track_selection(track_start,track_end):
     p1_x, p1_y, p1_z = track_start
     p2_x, p2_y, p2_z = track_end
     if (is_good_track(track_start,track_end) and 
-        is_anode_piercer(p1_z,p2_z) and
-        is_cathode_piercer(p1_z, p2_z)):
+        # is_anode_piercer(p1_z,p2_z) and
+        # is_cathode_piercer(p1_z, p2_z)):
         # is_top_piercer(p1_y,p2_y)):
         # is_bottom_piercer(p1_y,p2_y)): # and 
-         # is_upstream_piercer(p1_x,p2_x)): # and 
+        is_upstream_piercer(p1_x,p2_x)): 
         # is_downstream_piercer(p1_x,p2_x)):
         return True
 
@@ -98,18 +98,19 @@ def main(args):
     global f
     f = h5py.File(args.infile, 'r')
     
-    fig = plt.figure() 
-    ax = fig.add_subplot(111, projection = '3d') 
-    ax.set_xlabel(r'x (horizontal) [mm]')
-    ax.set_ylabel(r'y (vertical) [mm]')
-    ax.set_zlabel(r'z (drift) [mm]')
-    # Set background to white
-    ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-    ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+    if args.p:
+        fig = plt.figure() 
+        ax = fig.add_subplot(111, projection = '3d') 
+        ax.set_xlabel(r'x (horizontal) [mm]')
+        ax.set_ylabel(r'y (vertical) [mm]')
+        ax.set_zlabel(r'z (drift) [mm]')
+        # Set background to white
+        ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 
-    # draw_boundaries(ax,TPC_bounds)
-    draw_boundaries(ax)
+        # draw_boundaries(ax,TPC_bounds)
+        draw_boundaries(ax)
 
     rawTracks = np.array(f['tracks'])
     # print(rawTracks.size)
@@ -146,9 +147,10 @@ def main(args):
             
         if track_selection(corrected_start, corrected_end):
             passing_counter += 1
-            plot_selected_track(ax,
-                                corrected_start,
-                                corrected_end)
+            if args.p:
+                plot_selected_track(ax,
+                                    corrected_start,
+                                    corrected_end)
 
             theseHits = f['hits'][thisTrack['hit_ref']]
             startHitPos, endHitPos = get_extreme_hit_pos(thisTrack,
@@ -166,20 +168,19 @@ def main(args):
 
     passing_fraction = round( 100*(passing_counter/tracks.size), 2 )
 
-    # Some helpful stats to print on the figure. 
-    text = 'Number of tracks over ' + str(length_cut/10) + ' [cm] : ' + str(tracks.size)
-    text2 = 'Percent of tracks over ' + str(length_cut/10) + ' [cm] passing the cuts: ' + str(passing_fraction) +'%'
-    text3 = 'Anode + Downstream Crossers' #Change this to whichever selection is made
-    ax.text2D(0.05, 0.95, text, transform=ax.transAxes)
-    ax.text2D(0.05, 0.90, text2, transform=ax.transAxes)
-    ax.text2D(0.05, 0.0, text3, transform=ax.transAxes)
+    if args.p:
+        # Some helpful stats to print on the figure. 
+        text = 'Number of tracks over ' + str(length_cut/10) + ' [cm] : ' + str(tracks.size)
+        text2 = 'Percent of tracks over ' + str(length_cut/10) + ' [cm] passing the cuts: ' + str(passing_fraction) +'%'
+        text3 = 'Anode + Downstream Crossers' #Change this to whichever selection is made
+        ax.text2D(0.05, 0.95, text, transform=ax.transAxes)
+        ax.text2D(0.05, 0.90, text2, transform=ax.transAxes)
+        ax.text2D(0.05, 0.0, text3, transform=ax.transAxes)
 
     if args.o:
         np.save(args.o, corrected_endpoints)
-        # plt.savefig(args.o, dpi = 300)
-    # else:
-    #     plt.show()
-    plt.show()
+    if args.p:
+        plt.show()
 
 if __name__ == '__main__': 
     import argparse
@@ -203,6 +204,10 @@ if __name__ == '__main__':
                         default = '',
                         type = str,
                         help = 'save the data which passes the selection to a file')
+    parser.add_argument('-p',
+                        default = False,
+                        type = bool,
+                        help = 'show a plot of the selected tracks')
 
     args = parser.parse_args()
 

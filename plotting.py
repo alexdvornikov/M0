@@ -123,7 +123,7 @@ def main(args):
 
         hits = f['hits'][thisEvent['hit_ref']]
 
-        plot_hits(ax, hits, my_geometry)
+        plot_hits(ax, hits, f, my_geometry)
 
         for ti in range(thisEvent['ntracks']):
             thisTrack = f['tracks'][thisEvent['track_ref']][ti]
