@@ -91,7 +91,6 @@ def track_selection(track_start, track_end, cutString):
 def main(args):
     global my_geometry
     global TPC_bounds, anode_z, cathode_z, top, bottom, upstream, downstream
-    global passing_counter
     global length_cut
     global epsilon
 
@@ -142,7 +141,6 @@ def main(args):
 
     corrected_endpoints = []
     
-    passing_counter = 0
     for thisTrack in tracks[:N]:
         thisEvent = events[thisTrack['event_ref']]
 
@@ -162,7 +160,6 @@ def main(args):
             corrected_start, corrected_end = get_track_ends(thisTrack, my_geometry)
             
         if track_selection(corrected_start, corrected_end, args.cut):
-            passing_counter += 1
             if args.plot:
                 plot_selected_track(ax,
                                     corrected_start,
@@ -179,22 +176,17 @@ def main(args):
         # plot_hits(ax, hits, my_geometry, thisTrack)
         # print ("this track passes the cuts: " + str(track_selection(thisTrack, f)))
         
-    # print('Percentage of tracks over ' + str(length_cut) + '[mm] passing the cuts')
-    # print(100*(passing_counter/tracks.size))
-
     if args.plot:
         # Some helpful stats to print on the figure. 
-        text = 'Number of tracks over ' + str(length_cut/10) + ' [cm] : ' + str(tracks.size)
-        text2 = 'Percent of tracks over ' + str(length_cut/10) + ' [cm] passing the cuts: ' + str(passing_fraction) +'%'
-        text3 = 'Anode + Downstream Crossers' #Change this to whichever selection is made
-        ax.text2D(0.05, 0.95, text, transform=ax.transAxes)
-        ax.text2D(0.05, 0.90, text2, transform=ax.transAxes)
-        ax.text2D(0.05, 0.0, text3, transform=ax.transAxes)
+        text = 'Anode + Downstream Crossers' #Change this to whichever selection is made
+        ax.text2D(0.05, 0.0, text, transform=ax.transAxes)
 
     if args.output:
         np.save(args.output, corrected_endpoints)
     if args.plot:
         plt.show()
+
+    f.close()
 
 if __name__ == '__main__': 
     import argparse
