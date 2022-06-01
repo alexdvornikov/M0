@@ -6,10 +6,8 @@
 #
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=1g
+#SBATCH --mem-per-cpu=5g
 #SBATCH --constraint=haswell
-#
-#SBATCH --time=2:00:00
 
 PYTHON_EXEC=/global/homes/d/ddouglas/.conda/envs/larnd-sim-dev/bin/python3
 SCRIPTS_PATH=/global/project/projectdirsdune/users/ddouglas/M0
