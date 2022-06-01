@@ -54,17 +54,18 @@ def main(args):
     z_grid = np.linspace(zmin, zmax, n_zbin)
 
     fig = plt.figure()
+    print (crossingPoints[:,1], my_geometry.tpc_offsets[0][1]*10)
     totalD, bins, boop = np.histogram2d(crossingPoints[:,1] + my_geometry.tpc_offsets[0][1]*10,
                                         crossingPoints[:,2] + my_geometry.tpc_offsets[0][2]*10,
                                         bins = (y_grid, z_grid),
-                                        weights = dz)
+                                        weights = dx)
     counts, bins, bop = np.histogram2d(crossingPoints[:,1] + my_geometry.tpc_offsets[0][1]*10,
                                        crossingPoints[:,2] + my_geometry.tpc_offsets[0][2]*10,
                                        bins = (y_grid, z_grid))
 
     print (totalD/counts)
 
-    plt.imshow((totalD/counts).T, origin='lower')
+    plt.imshow((totalD/counts), origin='lower')
     plt.colorbar()
     
     plt.xlabel(r'y (vertical) [mm]')
