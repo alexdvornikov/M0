@@ -27,7 +27,7 @@ def main(args):
     endPoints = np.concatenate([np.load(infileName)
                                 for infileName in args.infileList])
 
-    crossingMask = np.logical_and(approx_equals(endPoints[:,0], upstream, epsilon))
+    crossingMask = approx_equals(endPoints[:,0], upstream, epsilon)
     crossingPoints = endPoints[crossingMask]
 
     dx = crossingPoints[:,0] - upstream
