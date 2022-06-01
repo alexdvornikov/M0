@@ -17,5 +17,5 @@ SCRIPTS_PATH=/global/project/projectdirsdune/users/ddouglas/M0
 INFILE=$1
 OUTFILE=$3
 
-COMMAND="$PYTHON_EXEC $SCRIPTS_PATH/selection.py -i $INFILE -o $OUTFILE"
+COMMAND="$PYTHON_EXEC $SCRIPTS_PATH/selection.py $INFILE -o $OUTFILE"
 
