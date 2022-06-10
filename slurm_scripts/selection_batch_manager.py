@@ -1,3 +1,5 @@
+# python3 selection_batch_manager.py -i /global/project/projectdirs/dune/www/data/Module0/TPC1+2/dataRuns/tracksData -r /global/project/projectdirs/dune/www/data/Module0/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/crossers/upstream -c upstream -n 5
+
 import os
 import argparse
 
