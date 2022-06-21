@@ -16,27 +16,6 @@ def delete_nans(array):
 
     return np.array( list_no_nans )
 
-
-# def get_data_refs(f):
-#     global rawEvents, rawTracks, rawHits, rawT0
-#     global track_reg, track_ref
-#     global hit_reg, hit_ref
-#     global t0_reg, t0_ref
-
-#     rawEvents = f['charge/events/data']
-#     rawTracks = f['combined/tracklets/data']
-#     rawHits = f['charge/hits/data']
-#     rawT0 = f['combined/t0/data']
-
-#     track_reg = f['combined/tracklets/ref/charge/events/ref_region']
-#     track_ref = f['charge/events/ref/combined/tracklets/ref']
-
-#     hit_reg = f['combined/tracklets/ref/charge/hits/ref_region']
-#     hit_ref = f['combined/tracklets/ref/charge/hits/ref']
-
-#     t0_reg = f['combined/t0/ref/charge/events/ref_region']
-#     t0_ref = f['charge/events/ref/combined/t0/ref']
-
 class Data():
     def __init__(self, f):
         self.rawEvents = f['charge/events/data']
