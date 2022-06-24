@@ -11,6 +11,9 @@ from plotting import *
 mpl.rc('text', usetex = True)
 mpl.rc('font', family='SignPainter')
 
+# Ignore divide by zero warnings
+np.seterr(divide='ignore', invalid='ignore')
+
 def main(args):
     global my_geometry
     global TPC_bounds, anode_z, cathode_z, top, bottom, upstream, downstream
@@ -29,7 +32,6 @@ def main(args):
     endPoints = np.concatenate([np.load(infileName)
                                 for infileName in args.infileList])
 
-
     if args.f == 'top':
         crossingMask = approx_equals(endPoints[:,1], top, epsilon)
         crossingPoints = endPoints[crossingMask]
@@ -47,7 +49,7 @@ def main(args):
         crossingPoints = endPoints[crossingMask]
         dx = downstream - crossingPoints[:,0] 
 
-
+    print( 'Number of selected points:' + str( crossingPoints.shape ) )
 
     c = 0.443 #$coarseness (if 1, then every cm)
 
