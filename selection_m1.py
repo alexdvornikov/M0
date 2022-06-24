@@ -1,9 +1,20 @@
+# Test for 1000 tracks
+# python selection_m1.py /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/events_2022_02_11_00_25_27_CET.gz.h5 -n 1000 -o m1_test.npy
+
 import numpy as np
 import h5py
 from utils_m1 import *
 
-#Peter's library (get from GitHub)
+# Peter's library 
+# In the slurm sbatch script (selection_batch.sh) need to setup 
+# the appropriate conda environment to pick it up. Namely, the command below.
+# conda activate /global/common/software/dune/module0_flow_nompi
 from h5flow.data import dereference
+
+
+from datetime import datetime
+startTime = datetime.now()
+
     
 def main(args):
     global my_geometry
@@ -85,6 +96,8 @@ def main(args):
         plt.show()
 
     f.close()
+
+    print(datetime.now() - startTime)
 
 if __name__ == '__main__': 
     import argparse
