@@ -8,8 +8,8 @@ from utils import *
 from plotting import *
 
 # Pretty fonts for figures 
-mpl.rc('text', usetex = True)
-mpl.rc('font', family='SignPainter')
+# mpl.rc('text', usetex = True)
+# mpl.rc('font', family='SignPainter')
 
 # Ignore divide by zero warnings
 np.seterr(divide='ignore', invalid='ignore')
@@ -109,7 +109,8 @@ def main(args):
         plt.xlim(downstream/to_m,upstream/to_m)
         plt.ylim(-anode_z/to_m,anode_z/to_m)
 
-    plt.show()
+    # plt.show()
+    plt.savefig( str(args.f) + '.png' )
         
 if __name__ == '__main__':
     import argparse
@@ -119,7 +120,8 @@ if __name__ == '__main__':
                         help = 'input numpy arrays containing track endpoint data',
                         nargs = '+')
     parser.add_argument('-g',
-                        default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
+                        default = './pixel_layouts/module1_layout-2.3.16.yaml',
+                        # default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
                         type = str,
                         help = 'path to the pixel layout YAML')
     parser.add_argument('-d',
@@ -134,3 +136,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
+
+# python faceAna.py /global/project/projectdirs/dune/users/olexiy/M0/merged_array.npy -f upstream

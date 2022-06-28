@@ -1,5 +1,5 @@
 # Test for 10 files
-# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/m1_10_files --nfiles 10
+# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/m1_endpoints
 
 # Module1 runlist
 # https://portal.nersc.gov/project/dune/data/Module1/runlist.txt

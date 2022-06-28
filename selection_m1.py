@@ -110,7 +110,8 @@ if __name__ == '__main__':
                         type = int,
                         help = 'evaluate the selection criteria over the first N tracks')
     parser.add_argument('-g', '--geometry',
-                        default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
+                        default = './pixel_layouts/module1_layout-2.3.16.yaml',
+                        # default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
                         type = str,
                         help = 'path to the pixel layout YAML')
     parser.add_argument('-d', '--detector',
