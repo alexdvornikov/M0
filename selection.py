@@ -21,7 +21,7 @@ def is_cathode_piercer(track_start, track_end):
     p2Cross = approx_equals(abs(p2_z), cathode_z, epsilon)
     return p1Cross or p2Cross
     
-def is_anode_piercer(track_start, track_end):
+def is_anode_piercer(track_start, track_end, anode_z, epsilon):
     p1_z = track_start[2]
     p2_z = track_end[2]
 

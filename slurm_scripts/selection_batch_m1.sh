@@ -13,7 +13,7 @@ export HDF5_USE_FILE_LOCKING=FALSE
 conda activate /global/common/software/dune/module0_flow_nompi
 
 SCRIPTS_PATH=/global/project/projectdirs/dune/users/olexiy/M0
-GEOMETRY_FILE=$SCRIPTS_PATH/pixel_layouts/multi_tile_layout-2.3.16.yaml
+GEOMETRY_FILE=$SCRIPTS_PATH/pixel_layouts/module1_layout-2.3.16.yaml
 DETECTOR_FILE=$SCRIPTS_PATH/detector_properties/module0.yaml
 
 INFILE=$1

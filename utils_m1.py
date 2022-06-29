@@ -1,8 +1,27 @@
 import numpy as np
 import h5py
 import yaml
+from itertools import cycle
+from sklearn.decomposition import PCA
+
+# Plotting stuff
+import seaborn as sns
+import plotly.graph_objects as go
+sns.set_theme(context='talk', style='white')
+
+# Custom libraries (in current directory)
 import consts
 from consts import detector
+import plot_theme #Custom theme for plotly
+from selection import *
+
+# Peter's library 
+# In the slurm sbatch script (selection_batch.sh) need to setup 
+# the appropriate conda environment to pick it up. Namely, the command below.
+# conda activate /global/common/software/dune/module0_flow_nompi
+from h5flow.data import dereference
+
+
 
 clock_interval = 0.1 # us
 
@@ -80,6 +99,52 @@ def get_extreme_hit_pos(t0, track, hits, my_geometry):
     l = np.dot((hits3d.T - trackStart),trackdl)/np.dot(trackdl, trackdl)
 
     return hits3d[:,np.argmin(l)], hits3d[:,np.argmax(l)]
+
+
+
+
+def get_pca_endpts(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
+
+    pos3d = np.column_stack( [ pos3d[0], pos3d[1], pos3d[2] ] )
+
+    # If using first few hits by anode...
+    # Sort by earliest (by anode) hits
+    if near_anode:
+
+        # Get hit times
+        ts = []
+        for hit in hits:
+            ts.append( hit['ts'] )
+        ts = np.array(ts)
+
+        # Sort hits by time
+        mask = np.argsort( ts )[:nhit] #use nhit earliest hits
+        hits_few = hits[mask]
+        pos3d_few = hit_to_3d(geometry, hits_few, t0)
+        coords = np.array([np.array(entry) for entry in pos3d_few]) #Nested list to nested array
+        coords = np.column_stack( [ coords[0], coords[1], coords[2] ] )
+
+    # If using all of the hits (not just those near the anode)
+    if not near_anode:
+        coords = pos3d
+
+    
+    # Fit line     
+    pca = PCA(1)
+    pca.fit(coords)
+    
+    v_dir = pca.components_[0]
+    r0 = coords.mean(axis=0)
+        
+    # Line endpoints
+    t0 = (pos3d[np.argmax(pos3d[:,2])] - r0).dot(v_dir)
+    t1 = (pos3d[np.argmin(pos3d[:,2])] - r0).dot(v_dir)
+    points = np.stack([r0 + t0 * v_dir, r0 + t1 * v_dir])
+    
+    return points
+
+
+
 
     
 def get_TPC_bounds():

@@ -1,4 +1,3 @@
-# Test for 10 files
 # python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/m1_endpoints
 
 # Module1 runlist
@@ -45,7 +44,7 @@ def main(indir, runlist, nfiles, outdir):
         
     n_launched = 0
     for thisRun in runMetaData:
-        print(thisRun)
+        # print(thisRun)
         conditions_met = [thisRun[key] == value
                           for key, value in runConditions.items()]
         if all(conditions_met):

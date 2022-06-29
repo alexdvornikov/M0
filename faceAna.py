@@ -61,9 +61,10 @@ def main(args):
     y_grid = np.linspace(bottom, top, n_ybin)
     z_grid = np.linspace(-anode_z, anode_z, n_zbin)
 
-    fig = plt.figure()
+    # fig = plt.figure()
 
     if args.f == 'upstream' or args.f == 'downstream':
+        fig = plt.figure(figsize=(7, 12))
         totalD, bins, boop = np.histogram2d(crossingPoints[:,1],
                                             crossingPoints[:,2],
                                             bins = (y_grid, z_grid),
@@ -73,6 +74,7 @@ def main(args):
                                         bins = (y_grid, z_grid))
 
     if args.f == 'top' or args.f == 'bottom':
+        fig = plt.figure()
         totalD, bins, boop = np.histogram2d(crossingPoints[:,2],
                                             crossingPoints[:,0],
                                             bins = (z_grid,x_grid),
@@ -138,4 +140,4 @@ if __name__ == '__main__':
     main(args)
 
 
-# python faceAna.py /global/project/projectdirs/dune/users/olexiy/M0/merged_array.npy -f upstream
+# python faceAna.py /global/project/projectdirs/dune/users/olexiy/M0/m1_merged.npy -f upstream
