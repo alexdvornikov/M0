@@ -1,13 +1,22 @@
 import numpy as np
 import h5py
 import yaml
+import pandas as pd
 from itertools import cycle
+from scipy import stats
+from scipy.stats import binned_statistic_2d
 from sklearn.decomposition import PCA
 
 # Plotting stuff
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 sns.set_theme(context='talk', style='white')
+# Pretty fonts for figures (if have LaTex enabled)
+mpl.rc('text', usetex = True)
+mpl.rc('font', family='SignPainter')
+
 
 # Custom libraries (in current directory)
 import consts
@@ -103,9 +112,11 @@ def get_extreme_hit_pos(t0, track, hits, my_geometry):
 
 
 
-def get_pca_endpts(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
+def distortions(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
 
+    output = {}
     pos3d = np.column_stack( [ pos3d[0], pos3d[1], pos3d[2] ] )
+    output['reco'] = pos3d
 
     # If using first few hits by anode...
     # Sort by earliest (by anode) hits
@@ -139,11 +150,14 @@ def get_pca_endpts(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
     # Line endpoints
     t0 = (pos3d[np.argmax(pos3d[:,2])] - r0).dot(v_dir)
     t1 = (pos3d[np.argmin(pos3d[:,2])] - r0).dot(v_dir)
-    points = np.stack([r0 + t0 * v_dir, r0 + t1 * v_dir])
+    output['endpts'] = np.stack([r0 + t0 * v_dir, r0 + t1 * v_dir])
+
+    # "True" track
+    t_par = (pos3d - r0).dot(v_dir)
+    true_track = r0 + t_par[:,None] * v_dir[None,:]
+    output['true'] = true_track
     
-    return points
-
-
+    return output
 
 
     

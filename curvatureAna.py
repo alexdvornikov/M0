@@ -23,14 +23,18 @@ def main(args):
     bottom = TPC_bounds[0][1][0]
     upstream = TPC_bounds[0][0][1]
     downstream = TPC_bounds[0][0][0]
-    length_cut = 200 #mm
-    epsilon = 50 #mm
+    length_cut = 100 #mm
+    epsilon = 10 #mm
 
     global f
     f = h5py.File(args.infile, 'r')
     data = Data(f)
     #----------------------------------------------------------------------------#
+
+    # # If plotting residuals
+    # fig, axes = plt.subplots(2,1,figsize=(8, 8),sharex=True,sharey=True)
     
+    # If plotting hits and PCAs
     if args.plot:
         import matplotlib.pyplot as plt
         from mpl_toolkits import mplot3d as plt3d
@@ -47,8 +51,10 @@ def main(args):
     else:
         N = len(track_idx)
 
-    max_trks = args.nshow
+    max_trks_show = args.nshow
     n_trks = 0
+
+    output = []
 
     for thisTrack_idx in track_idx[:N]:
         thisTrack = data.rawTracks[thisTrack_idx]
@@ -73,13 +79,21 @@ def main(args):
         startHitPos, endHitPos = get_extreme_hit_pos(t0,thisTrack,theseHits[0],my_geometry)
         corrected_endpoints.append(startHitPos)
         corrected_endpoints.append(endHitPos)
+
+        # Focus on a single TPC for now (avoid positive drift coordinates)
+        if startHitPos[2] > 0 or endHitPos[2] > 0:
+            continue
         #----------------------------------------------------------------------------#
         # Check anode crossing and plot
         #----------------------------------------------------------------------------#
         if is_anode_piercer(startHitPos, endHitPos, anode_z, epsilon):
+
             # For more on get_pca_endpts see utils_m1.py
-            endpts = get_pca_endpts(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
+            ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
+            output.append(ds)
+
             if args.plot:
+                endpts = ds['endpts']
 
                 # Plot projected PCA endpoints
                 fig.add_trace(
@@ -105,12 +119,111 @@ def main(args):
 
 
                 n_trks += 1
-                if n_trks >= max_trks:
+                if n_trks >= max_trks_show:
                     break 
 
 
     # if args.output:
     #     np.save(args.output, corrected_endpoints)
+
+    #----------------------------------------------------------------------------#
+    # Get reco and true coords
+    #----------------------------------------------------------------------------#
+    print( len(output) )
+    concat = lambda key : np.concatenate([out[key] for out in output])
+    reco_coords = concat('reco')
+    true_coords = concat('true')
+
+    x, y, z = reco_coords.T
+    dx, dy, dz = (reco_coords - true_coords).T
+    #----------------------------------------------------------------------------#
+    # Plot deviation vs drift coordinate
+    #----------------------------------------------------------------------------#
+    global plt
+    fig, axes = plt.subplots(2,1,figsize=(8, 8),sharex=True,sharey=True)
+
+    major_ticks_x = np.arange(-35, 5, 5)
+    minor_ticks_x = np.arange(-35, 5, 1)
+    major_ticks_y = np.arange(-15, 15, 5)
+    minor_ticks_y = np.arange(-15, 15, 1)
+
+    ax = axes[0]
+    # ax.scatter(z/10, dx/10)
+    ax.hexbin(z/10, dx/10, mincnt=1, cmap='viridis', bins='log')
+    ax.set_ylabel('$\mathrm{\Delta x}$ [cm]')
+    # ax.set_xticks(np.arange(0, 35, 5))
+    # ax.set_yticks(np.arange(-10, 10, 5))
+    # ax.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
+
+    ax.set_xticks(major_ticks_x)
+    ax.set_xticks(minor_ticks_x, minor=True)
+    ax.set_yticks(major_ticks_y)
+    ax.set_yticks(minor_ticks_y, minor=True)
+
+    ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
+    ax.grid(which='minor', alpha=0.2)
+    ax.grid(which='major', alpha=0.5)
+
+    ax = axes[1]
+    # ax.scatter(z/10, dy/10)
+    ax.hexbin(z/10, dy/10, mincnt=1, cmap='viridis', bins='log')
+    ax.set_ylabel('$\mathrm{\Delta y}$ [cm]')
+    ax.set_xlabel('z [cm]')
+    # ax.set_xticks(np.arange(0, 35, 5))
+    # ax.set_yticks(np.arange(-10, 10, 5))
+
+    ax.set_xticks(major_ticks_x)
+    ax.set_xticks(minor_ticks_x, minor=True)
+    ax.set_yticks(major_ticks_y)
+    ax.set_yticks(minor_ticks_y, minor=True)
+
+    ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
+    ax.grid(which='minor', alpha=0.2)
+    ax.grid(which='major', alpha=0.5)
+
+    ax.set_xlim(-32,0)
+    ax.set_ylim(-10, 10)
+
+    plt.show()
+    # plt.savefig('res.eps')
+    #----------------------------------------------------------------------------#
+
+    #----------------------------------------------------------------------------#
+    # Plot face projection
+    #----------------------------------------------------------------------------#
+    # global plt
+    # fig, axes = plt.subplots(1,2, figsize=(6, 6), sharex=True, sharey=True)
+
+    # vmax = 3
+    # bins = [5,10]
+    # kwargs = dict(
+    #     vmin=-vmax, vmax=vmax,
+    #     cmap='winter',
+    #     origin='lower',
+    #     extent=[-32,0,-30,30],
+    #     interpolation='none',
+    # )
+        
+
+    # ax = axes[0]
+    # pf = binned_statistic_2d(z/10, x/10, dx/10., bins=bins, range=[(-30,0), (-30,30)])
+    # ax.imshow(pf.statistic.T, **kwargs)
+    # ax.set_ylabel('$\mathrm{x_{r}}$ [cm]')
+    # ax.set_xlabel('$\mathrm{z_{r}}$ [cm]')
+    # ax.set_title('$\mathrm{\Delta x}$ [cm]')
+
+    # ax = axes[1]
+    # pf = binned_statistic_2d(z/10, x/10, dy/10., bins=bins, range=[(-30,0), (-30,30)])
+    # im = ax.imshow(pf.statistic.T, **kwargs)
+    # ax.set_title('$\mathrm{\Delta y}$ [cm]')
+
+    # fig.tight_layout()
+
+    # cax,kw = mpl.colorbar.make_axes(axes.flatten())
+    # plt.colorbar(im, cax=cax, label='[cm]')
+    # plt.show()
+    #----------------------------------------------------------------------------#
+
 
 
     if args.plot:
@@ -162,7 +275,7 @@ if __name__ == '__main__':
     #                     type = str,
     #                     help = 'save the data which passes the selection to a file')
     parser.add_argument('-p', '--plot',
-                        default = True,
+                        default = False,
                         type = bool,
                         help = 'show a plot of the selected tracks')
 
