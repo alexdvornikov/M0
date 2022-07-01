@@ -11,7 +11,7 @@
 export HDF5_USE_FILE_LOCKING=FALSE
 
 PYTHON_EXEC=/global/common/software/nersc/cori-2022q1/sw/python/3.9-anaconda-2021.11/bin/python3
-SCRIPTS_PATH=/global/project/projectdirs/dune/users/dougl215/M0
+SCRIPTS_PATH=/global/project/projectdirs/dune/users/ddouglas/M0
 GEOMETRY_FILE=$SCRIPTS_PATH/pixel_layouts/multi_tile_layout-2.3.16.yaml
 DETECTOR_FILE=$SCRIPTS_PATH/detector_properties/module0.yaml
 

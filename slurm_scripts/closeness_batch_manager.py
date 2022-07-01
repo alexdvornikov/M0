@@ -3,11 +3,10 @@
 import os
 import argparse
 
-def main(indir, runlist, nfiles, outdir):
+def main(indir, runlist, nJobs, outdir):
     print ("input directory: " + indir)
     print ("runlist file: " + runlist)
-    print ("cut string: " + cut)
-    print ("to be processed: " + str(nfiles))
+    print ("to be processed: " + str(nJobs))
     print ("output directory: " + outdir)
 
     print ("reading runlist...")
@@ -37,7 +36,7 @@ def main(indir, runlist, nfiles, outdir):
 
     for thisRunA in goodRuns:
         for thisRunB in goodRuns:
-            if hash(thisRunA) >= hash(thisRunB):
+            if hash(thisRunA['charge_filename']) >= hash(thisRunB['charge_filename']):
                 if n_launched < nJobs:
                     
                     rel_infilenameA = 'datalog_'+thisRunA['charge_filename']+'evd.h5'
@@ -60,7 +59,8 @@ def main(indir, runlist, nfiles, outdir):
                     
                     n_launched += 1
 
-                    print ("input: " + infileName)
+                    print ("input A: " + infileNameA)
+                    print ("input B: " + infileNameB)
                     print ("output: " + outfileName)
                     print ("sbatch command: " + sbatch_cmd)
                     print ()
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('--runlist','-r',
 			required=True,
 			type=str)
-    parser.add_argument('--nfiles','-n',
+    parser.add_argument('--nJobs','-n',
 			default = -1,
 			type=int)
     parser.add_argument('--outdir','-o',
