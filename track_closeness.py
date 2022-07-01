@@ -144,7 +144,7 @@ def main(args):
     if args.n > 0:
         Ntracks = args.n
     else:
-        Ntracks = tracks.shape[0]
+        Ntracks = tracksA.shape[0]
 
     for trackA in tracksA[:Ntracks]:
         evA = fA['events'][trackA['event_ref']]

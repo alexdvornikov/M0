@@ -31,7 +31,7 @@ def main(indir, runlist, nJobs, outdir):
     for thisRun in runMetaData:
         conditions_met = [thisRun[key] == value
                           for key, value in runConditions.items()]
-        if all(conditions_met):
+        if all(conditions_met) and os.path.exists(thisRun['charge_filename']):
             goodRuns.append(thisRun)
 
     for thisRunA in goodRuns:
