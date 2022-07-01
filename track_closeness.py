@@ -4,6 +4,9 @@ import h5py
 
 from utils import *
 
+def pairWiseDist(posPairArray):
+    return np.sqrt(np.sum(np.power(np.diff(posPairArray, axis = 1), 2), axis = -1))
+
 class POCA:
     def __init__(self, d, pointA, pointB):
         """
@@ -17,20 +20,20 @@ class POCA:
         self.pointA = pointA
         self.pointB = pointB
 
-def closeness(trackA, trackB, h5File, metric = 'hit'):
+def closeness(trackA, trackB, metric = 'hit'):
     if metric == 'hit':
-        hitsA = h5File['hits'][trackA['hit_ref']]
-        hitsB = h5File['hits'][trackB['hit_ref']]
+        hitsA = fA['hits'][trackA['hit_ref']]
+        hitsB = fB['hits'][trackB['hit_ref']]
 
-        evA = h5File['events'][trackA['event_ref']]
-        evB = h5File['events'][trackB['event_ref']]
+        evA = fA['events'][trackA['event_ref']]
+        evB = fB['events'][trackB['event_ref']]
 
-        posA = hit_to_3d(hitsA, evA)
-        posB = hit_to_3d(hitsB, evB)
+        posA = hit_to_3d(my_geometry, hitsA, trackA['t0'])
+        posB = hit_to_3d(my_geometry, hitsB, trackB['t0'])
 
         posPairs = np.array([[thisPosA, thisPosB]
-                             for thisPosA in posA.T
-                             for thisPosB in posB.T])
+                             for thisPosA in np.array(posA).T
+                             for thisPosB in np.array(posB).T])
         pwd = pairWiseDist(posPairs)
         d = np.min(pwd)
         posPairMin = np.argmin(pwd)
@@ -112,51 +115,72 @@ def closeness(trackA, trackB, h5File, metric = 'hit'):
         raise ValueError ("this metric is not defined!")
 
 def main(args):
-    f = h5py.File(args.infile)
-
-    rawTracks = np.array(f['tracks'])
-
-    mask = rawTracks['length'] > 500.
-
-    tracks = rawTracks[mask]
+    global fA
+    fA = h5py.File(args.infileA)
+    infileAtag = hash(args.infileA)
     
+    global fB
+    fB = h5py.File(args.infileB)
+    infileBtag = hash(args.infileB)
+
+    global my_geometry
+    my_geometry = DetectorGeometry(args.detector, args.geometry)
+
+    rawTracksA = np.array(fA['tracks'])
+    maskA = rawTracksA['length'] > 500.
+    tracksA = rawTracksA[maskA]
+
+    rawTracksB = np.array(fB['tracks'])
+    maskB = rawTracksB['length'] > 500.
+    tracksB = rawTracksB[maskB]
+
     hitDists = []
     PCAdists = []
     Aid = []
     Bid = []
+    Afile = []
+    Bfile = []
 
     if args.n > 0:
         Ntracks = args.n
     else:
         Ntracks = tracks.shape[0]
 
-    for trackA in tracks[:Ntracks]:
-        for trackB in tracks:
-            if trackA['track_id'] > trackB['track_id']:
-                print ("measuring track closeness between tracks:")
-                print (" ".join(["trackA:",
-                                 str(trackA['track_id']),
-                                 "nhits:",
-                                 str(trackA['nhit'])]))
-                print (" ".join(["trackB:",
-                                 str(trackB['track_id']),
-                                 "nhits:",
-                                 str(trackB['nhit'])]))
+    for trackA in tracksA[:Ntracks]:
+        evA = fA['events'][trackA['event_ref']]
 
-                Ai = trackA['track_id']
-                Bi = trackB['track_id']
-                d = closeness(trackA, trackB, f)
-                dPCA = closeness(trackA, trackB, f, metric = 'PCA')
+        if evA['n_ext_trigs'] >= 2:
+            for trackB in tracksB:
+                evB = fB['events'][trackB['event_ref']]
 
-                Aid.append(Ai)
-                Bid.append(Bi)
-                hitDists.append(d)
-                PCAdists.append(dPCA)
-                print ("closeness: " + str(d))
-                print ("closeness (PCA): " + str(dPCA))
+                if evB['n_ext_trigs'] >= 2:
+                    if (trackA['track_id'] > trackB['track_id']) or (fA != fB):
+                        print ("measuring track closeness between tracks:")
+                        print (" ".join(["trackA:",
+                                         str(trackA['track_id']),
+                                         "nhits:",
+                                         str(trackA['nhit'])]))
+                        print (" ".join(["trackB:",
+                                         str(trackB['track_id']),
+                                         "nhits:",
+                                         str(trackB['nhit'])]))
+
+                        Ai = trackA['track_id']
+                        Bi = trackB['track_id']
+                        d = closeness(trackA, trackB)
+                        dPCA = closeness(trackA, trackB, metric = 'PCA')
+
+                        Aid.append(Ai)
+                        Bid.append(Bi)
+                        Afile.append(infileAtag)
+                        Bfile.append(infileBtag)
+                        hitDists.append(d)
+                        PCAdists.append(dPCA)
+                        print ("closeness: " + str(d))
+                        print ("closeness (PCA): " + str(dPCA))
                     
     if args.o:
-        np.savetxt(args.o, np.array([Aid, Bid, hitDists]))
+        np.save(args.o, np.array([Afile, Bfile, Aid, Bid, hitDists, PCAdists]))
     else:
         plt.figure()
         bins = np.concatenate([np.linspace(0, 100, 10)[:-1],
@@ -194,12 +218,22 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Find the track-to-track distance between pairs of tracks in a given dataset.')
-    parser.add_argument('infile',
+    parser.add_argument('infileA',
+                        help='input larpix data')
+    parser.add_argument('infileB',
                         help='input larpix data')
     parser.add_argument('-n',
                         default = -1,
                         type = int,
                         help='examine only the first n tracks.')
+    parser.add_argument('-g', '--geometry',
+                        default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
+                        type = str,
+                        help = 'path to the pixel layout YAML')
+    parser.add_argument('-d', '--detector',
+                        default = './detector_properties/module0.yaml',
+                        type = str,
+                        help = 'path to the detector properties YAML')
     parser.add_argument('-o',
                         default = "",
                         type = str,
