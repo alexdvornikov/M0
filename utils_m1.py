@@ -10,6 +10,7 @@ from sklearn.decomposition import PCA
 # Plotting stuff
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 import seaborn as sns
 import plotly.graph_objects as go
 sns.set_theme(context='talk', style='white')
