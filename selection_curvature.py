@@ -3,8 +3,8 @@
 
 
 # If interested in timiming the code...
-# from datetime import datetime
-# startTime = datetime.now()
+from datetime import datetime
+startTime = datetime.now()
 # Also need to uncomment a datetime line above __main__ at the bottom of the code. 
 
 from utils_m1 import *
@@ -171,7 +171,7 @@ def main(args):
 
 
     # Show time elapsed for running the code
-    # print(datetime.now() - startTime)
+    print(datetime.now() - startTime)
 
 if __name__ == '__main__': 
     import argparse
