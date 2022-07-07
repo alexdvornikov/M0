@@ -11,9 +11,9 @@ from sklearn.decomposition import PCA
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-import seaborn as sns
-import plotly.graph_objects as go
-sns.set_theme(context='talk', style='white')
+# import seaborn as sns
+# import plotly.graph_objects as go
+# sns.set_theme(context='talk', style='white')
 # Pretty fonts for figures (if have LaTex enabled)
 mpl.rc('text', usetex = True)
 mpl.rc('font', family='SignPainter')

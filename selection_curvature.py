@@ -1,5 +1,5 @@
 # Example use
-# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5
+# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o1 hb_counts.npy -o2 hist2d_zx.npy -o3 hist2d_zy.npy
 
 
 # If interested in timiming the code...
@@ -152,15 +152,20 @@ def main(args):
     zymeans = get_hist(z*cm,y*cm,dx*cm,dy*cm, extent, bns)
 
     #----------------------------------------------------------------------------#
-    if args.output: 
-        # Save hexbin outputs
-        np.save('hb_counts.npy', hb_counts)
-        np.save('hb_pos.npy', hb_pos)
+    if args.output1: 
 
-        # Save binned_statistic_2d outputs
-        np.save('hist2d_zx.npy', zxmeans)
-        np.save('hist2d_zy.npy', zymeans)
-        # np.save('hist2d_edges.npy', bin_edges_dx)
+        # # Save hexbin outputs
+        # np.save('hb_counts.npy', hb_counts)
+        # # np.save('hb_pos.npy', hb_pos)
+
+        # # Save binned_statistic_2d outputs
+        # np.save('hist2d_zx.npy', zxmeans)
+        # np.save('hist2d_zy.npy', zymeans)
+        # # np.save('hist2d_edges.npy', bin_edges_dx)
+
+        np.save(args.output1, hb_counts)
+        np.save(args.output2, zxmeans)
+        np.save(args.output3, zymeans)
 
     f.close()
 
@@ -186,10 +191,18 @@ if __name__ == '__main__':
                         default = './detector_properties/module0.yaml',
                         type = str,
                         help = 'path to the detector properties YAML')
-    parser.add_argument('-o', '--output',
-                        default = True,
-                        type = bool,
-                        help = 'save the data which passes the selection to a file')
+    parser.add_argument('-o1', '--output1',
+                        default = '',
+                        type = str,
+                        help = '1st output file')
+    parser.add_argument('-o2', '--output2',
+                        default = '',
+                        type = str,
+                        help = '2nd output file')
+    parser.add_argument('-o3', '--output3',
+                        default = '',
+                        type = str,
+                        help = '3rd output file')
 
     args = parser.parse_args()
 
