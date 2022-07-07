@@ -1,4 +1,4 @@
-# Example usage
+# Example use
 # python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5
 
 
@@ -25,6 +25,7 @@ def main(args):
     downstream = TPC_bounds[0][0][0]
     length_cut = 100 #mm
     epsilon = 10 #mm
+    cm = 0.1 #Conversion from mm to cm
 
     global f
     f = h5py.File(args.infile, 'r')
@@ -60,8 +61,9 @@ def main(args):
         # Get endpoints
         #----------------------------------------------------------------------------#
         startHitPos, endHitPos = get_extreme_hit_pos(t0,thisTrack,theseHits[0],my_geometry)
-        # Focus on a single TPC for now (avoid positive drift coordinates)
-        if startHitPos[2] > 0 or endHitPos[2] > 0:
+
+        # Focus on a single TPC for now (left of the cathode)
+        if startHitPos[2] > cathode_z or endHitPos[2] > cathode_z:
             continue
         #----------------------------------------------------------------------------#
         # Check anode crossing and plot
@@ -90,9 +92,10 @@ def main(args):
     # Bin the offsets and save the counts and bin centers (hexbin)
     #----------------------------------------------------------------------------#
     global plt
-    offset_range = 20
-    hb_dx = plt.hexbin(z/10, dx/10, extent = (downstream/10, 0, -offset_range, offset_range), mincnt=1, gridsize = 50, bins='log')
-    hb_dy = plt.hexbin(z/10, dy/10, extent = (downstream/10, 0, -offset_range, offset_range), mincnt=1, gridsize = 50, bins='log')
+    offset_range = 20 # [cm]
+    grdsize = 50
+    hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+    hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
 
     hb_counts = []
     hb_pos = []
@@ -119,12 +122,48 @@ def main(args):
     hb_pos.append(ys_dy)
 
     hb_counts = np.array( hb_counts, dtype=object )
+    #----------------------------------------------------------------------------#
 
+    #----------------------------------------------------------------------------#
+    # 2d histogram for dx, dy offsets in the zx plane (also need yz plane)
+    #----------------------------------------------------------------------------#
+    zbins = round( (anode_z - cathode_z)*cm)
+    xbins = round( (upstream + abs(downstream))*cm )
+    ybins = round( (top + abs(bottom))*cm )
+    # binned_statistic_2d by default gives the mean in each bin (different from hist2d)
+     #----------------------------------------------------------------------------#
+    def get_hist(drift_coord, transverse_coord, dx, dy, extent, bns):
+        dx_hist = binned_statistic_2d(drift_coord, transverse_coord, dx, bins=bns, range=extent)
+        dy_hist = binned_statistic_2d(drift_coord, transverse_coord, dy, bins=bns, range=extent)
+        bin_means = np.array( [dx_hist.statistic, dy_hist.statistic] )
+
+        # Bin edges should be the same for al of the files. 
+        # Only need to get these once. 
+        # bin_edges_dx = np.array( [bs_dx.x_edge,bs_dx.y_edge], dtype=object )
+        # bin_edges_dy = np.array( [bs_dy.x_edge,bs_dy.y_edge], dtype=object )
+        return bin_means
+    #----------------------------------------------------------------------------#
+    bns = [zbins,xbins]
+    extent = [(-anode_z*cm,cathode_z*cm), (downstream*cm,upstream*cm)]
+    zxmeans = get_hist(z*cm,x*cm,dx*cm,dy*cm, extent, bns)
+
+    bns = [zbins,ybins]
+    extent = [(-anode_z*cm,cathode_z*cm), (bottom*cm,top*cm)]
+    zymeans = get_hist(z*cm,y*cm,dx*cm,dy*cm, extent, bns)
+
+    #----------------------------------------------------------------------------#
     if args.output: 
+        # Save hexbin outputs
         np.save('hb_counts.npy', hb_counts)
         np.save('hb_pos.npy', hb_pos)
 
+        # Save binned_statistic_2d outputs
+        np.save('hist2d_zx.npy', zxmeans)
+        np.save('hist2d_zy.npy', zymeans)
+        # np.save('hist2d_edges.npy', bin_edges_dx)
+
     f.close()
+
 
     # Show time elapsed for running the code
     # print(datetime.now() - startTime)
