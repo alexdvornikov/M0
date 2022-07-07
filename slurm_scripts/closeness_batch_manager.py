@@ -31,7 +31,7 @@ def main(indir, runlist, nJobs, outdir):
     for thisRun in runMetaData:
         conditions_met = [thisRun[key] == value
                           for key, value in runConditions.items()]
-        if all(conditions_met) and os.path.exists(thisRun['charge_filename']):
+        if all(conditions_met):
             goodRuns.append(thisRun)
 
     for thisRunA in goodRuns:
@@ -51,10 +51,13 @@ def main(indir, runlist, nJobs, outdir):
                                                 '.npy'])
                     outfileName = os.path.join(outdir, rel_outfileName)
 
-                    sbatch_cmd = " ".join(["sbatch ./closeness_batch.sh",
-                                           infileNameA,
-                                           infileNameB,
-                                           outfileName])
+                    for batchNo in range(args.batchDiv):
+                        sbatch_cmd = " ".join(["sbatch ./closeness_batch.sh",
+                                               infileNameA,
+                                               infileNameB,
+                                               outfileName,
+                                               batchNo,
+                                               args.batchDiv])
                     os.system(sbatch_cmd)
                     
                     n_launched += 1
@@ -80,6 +83,9 @@ if __name__ == '__main__':
     parser.add_argument('--outdir','-o',
 			required=True,
 			type=str)
+    parser.add_argument('--batchDiv', 'b',
+                        default = 1,
+                        type = int)
 
     args = parser.parse_args()
 

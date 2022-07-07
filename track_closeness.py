@@ -130,6 +130,8 @@ def main(args):
     maskA = rawTracksA['length'] > 500.
     tracksA = rawTracksA[maskA]
 
+    tracksAsubset = tracksA[args.b::args.N]
+
     rawTracksB = np.array(fB['tracks'])
     maskB = rawTracksB['length'] > 500.
     tracksB = rawTracksB[maskB]
@@ -141,12 +143,7 @@ def main(args):
     Afile = []
     Bfile = []
 
-    if args.n > 0:
-        Ntracks = args.n
-    else:
-        Ntracks = tracksA.shape[0]
-
-    for trackA in tracksA[:Ntracks]:
+    for trackA in tracksAsubset:
         evA = fA['events'][trackA['event_ref']]
 
         if evA['n_ext_trigs'] >= 2:
@@ -222,10 +219,14 @@ if __name__ == '__main__':
                         help='input larpix data')
     parser.add_argument('infileB',
                         help='input larpix data')
-    parser.add_argument('-n',
-                        default = -1,
+    parser.add_argument('-b',
+                        default = 0,
                         type = int,
-                        help='examine only the first n tracks.')
+                        help='batch number (from 0 to N-1)')
+    parser.add_argument('-N',
+                        default = 1,
+                        type = int,
+                        help='number of batches to divide the job into')
     parser.add_argument('-g', '--geometry',
                         default = './pixel_layouts/multi_tile_layout-2.3.16.yaml',
                         type = str,

@@ -4,6 +4,7 @@
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #
+#SBATCH --time=10:00:00
 #SBATCH --constraint=haswell
 #SBATCH --account=dune
 #SBATCH --qos=shared
@@ -18,7 +19,9 @@ DETECTOR_FILE=$SCRIPTS_PATH/detector_properties/module0.yaml
 INFILE1=$1
 INFILE2=$2
 OUTFILE=$3
+BATCHNO=$4
+BATCHDIV=$5
 
-COMMAND="$PYTHON_EXEC $SCRIPTS_PATH/track_closeness.py $INFILE1 $INFILE2 -o $OUTFILE -d $DETECTOR_FILE -g $GEOMETRY_FILE"
+COMMAND="$PYTHON_EXEC $SCRIPTS_PATH/track_closeness.py $INFILE1 $INFILE2 -o $OUTFILE -d $DETECTOR_FILE -g $GEOMETRY_FILE -b $BATCHNO -N $BATCHDIV"
 
 $COMMAND
