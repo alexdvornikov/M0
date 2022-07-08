@@ -1,4 +1,4 @@
-# python curvature_selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/m1_histos
+# python curvature_selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/m1_histos -n 5
 
 import os
 import argparse
@@ -46,7 +46,7 @@ def main(indir, runlist, nfiles, outdir):
                 outfileName3 = os.path.join(outdir, rel_outfileName3)
 
                 # Run sbatch script for module1. 
-                sbatch_cmd = " ".join(["sbatch ./selection_batch_m1.sh",
+                sbatch_cmd = " ".join(["sbatch ./curvature_selection_batch_m1.sh",
                                        infileName,
                                        outfileName1,
                                        outfileName2,
