@@ -39,13 +39,13 @@ def main(indir,output1,output2,output3):
         np.save(args.output1, counts)
 
 
-    # binned_statistic_2d merging for one face
+    # binned_statistic_2d merging for zx face
     if output2: 
         # Now counts are actually means. Need to do a final mean as well. 
         mean_counts = counts/n_files
         np.save(args.output2, mean_counts)
 
-    # binned_statistic_2d merging for another face
+    # binned_statistic_2d merging for zy face
     if output3: 
         # Now counts are actually means. Need to do a final mean as well. 
         mean_counts = counts/n_files
@@ -59,17 +59,19 @@ if __name__ == '__main__':
 
     parser.add_argument('--indir','-i',required=True,type=str)
     parser.add_argument('-o1', '--output1',
-                        default = '',
+                        default = '', # hb_counts.npy
                         type = str,
                         help = '1st output file')
     parser.add_argument('-o2', '--output2',
-                        default = '',
+                        default = '', #hist2d_zx.npy
                         type = str,
                         help = '2nd output file')
     parser.add_argument('-o3', '--output3',
-                        default = '',
+                        default = '', #hist2d_zy.npy
                         type = str,
                         help = '3rd output file')
 
     args = parser.parse_args()
     main(**vars(args))
+
+#python merge_histos.py m1_histos -o1 hb_counts.npy -o2 hist2d_zx.npy -o3 hist2d_zy.npy

@@ -41,7 +41,29 @@ def main(args):
 
     output = []
 
+
+    
+
+    print('Number of tracks in file: ' + str( N ))
+    i = 0
+    n_tracks = 0
+    n_selected_tracks = 0
+    check_points = np.linspace(0,N,10) #for progress bar
+
     for thisTrack_idx in track_idx[:N]:
+
+        n_tracks += 1
+
+        #----------------------------------------------
+        # Progress bar (10% increments)
+        #----------------------------------------------
+        if n_tracks % round( check_points[1] ) == 0:
+            i += 1
+            print('Completed ' + str(10*i) + '%')
+            n_tracks = 0
+        #----------------------------------------------
+
+
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))
         evt_idx = thisEvent['id']
@@ -73,7 +95,10 @@ def main(args):
             # For more on get_pca_endpts see utils_m1.py
             ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
             output.append(ds)
+            n_selected_tracks += 1
+            
 
+    print('Number of selected tracks: ' + str(n_selected_tracks))
     # if args.output:
     #     np.save(args.output, output)
 
