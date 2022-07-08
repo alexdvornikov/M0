@@ -1,7 +1,9 @@
 # Output three histograms. 
 # One hexbin and two binned_statistic_2d. 
 
-#python merge_histos.py m1_histos -o1 hb_counts.npy -o2 hist2d_zx.npy -o3 hist2d_zy.npy
+# python3 merge_histos.py -i /Users/alex/Desktop/hists/hb -o1 hb_counts_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists/zx -o2 hist2d_zx_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists/zy -o3 hist2d_zy_merged.npy
 
 import os 
 import argparse
@@ -16,8 +18,8 @@ def main(indir,output1,output2,output3):
     i = 0
     array_shape = 0
     for file in os.listdir(indir):
-        hb_counts = np.load(indir + '/' + file, allow_pickle=True)
-        array_shape = hb_counts.shape
+        counts = np.load(indir + '/' + file, allow_pickle=True)
+        array_shape = counts.shape
         i += 1
         if i >= 1:
             break
@@ -30,6 +32,8 @@ def main(indir,output1,output2,output3):
     counts = np.zeros(array_shape)
     for file in os.listdir(indir):
         thisCount = np.load(indir + '/' + file, allow_pickle=True)
+        print(thisCount.shape)
+        print(counts.shape)
         counts = counts + thisCount #np.add() if same shape
         n_files += 1
     #----------------------------------------------------------------------------#
@@ -57,7 +61,9 @@ def main(indir,output1,output2,output3):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Merge numpy arrays')
 
-    parser.add_argument('--indir','-i',required=True,type=str)
+    parser.add_argument('--indir','-i',
+                        required=True,
+                        type=str)
     parser.add_argument('-o1', '--output1',
                         default = '', # hb_counts.npy
                         type = str,
