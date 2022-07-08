@@ -1,6 +1,8 @@
 # Example usage
 # python3 plot_curvature.py distortions.npy
 from utils_m1 import *
+# mpl.rc('text', usetex = True)
+# mpl.rc('font', family='SignPainter')
     
 def main(args):
     global my_geometry

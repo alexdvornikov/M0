@@ -1,12 +1,15 @@
 #!/bin/bash
 
-#SBATCH --job-name=m0_US_sel
+#SBATCH --job-name=m1_histos
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #SBATCH --time=10:00:00
 #SBATCH --constraint=haswell
 #SBATCH --account=dune
 #SBATCH --qos=shared
+#SBATCH --mail-type=end
+#SBATCH --mail-user=olexiy@hawaii.edu
+
 
 export HDF5_USE_FILE_LOCKING=FALSE
 
