@@ -137,10 +137,13 @@ def main(args):
         dy_hist = binned_statistic_2d(drift_coord, transverse_coord, dy, bins=bns, range=extent)
         bin_means = np.array( [dx_hist.statistic, dy_hist.statistic] )
 
-        # Bin edges should be the same for al of the files. 
+        # bin_edges_dx = np.array( [dx_hist.x_edge,dx_hist.y_edge], dtype=object )
+        # bin_edges_dy = np.array( [dy_hist.x_edge,dy_hist.y_edge], dtype=object )
+
+        # Bin edges should be the same for all of the files. 
         # Only need to get these once. 
-        # bin_edges_dx = np.array( [bs_dx.x_edge,bs_dx.y_edge], dtype=object )
-        # bin_edges_dy = np.array( [bs_dy.x_edge,bs_dy.y_edge], dtype=object )
+        # Also the dx and dy edges should be the same just being extra looking at both. 
+        # return bin_means, [bin_edges_dx, bin_edges_dy]
         return bin_means
     #----------------------------------------------------------------------------#
     bns = [zbins,xbins]
@@ -166,6 +169,11 @@ def main(args):
         np.save(args.output1, hb_counts)
         np.save(args.output2, zxmeans)
         np.save(args.output3, zymeans)
+
+        if args.edges:
+            np.save('hb_pos.npy', hb_pos) #hexbin edges 
+            # Don't need the binned_statistic_2d edges since using imshow extent. 
+            # Same for all files. 
 
     f.close()
 
@@ -203,6 +211,10 @@ if __name__ == '__main__':
                         default = '',
                         type = str,
                         help = '3rd output file')
+    parser.add_argument('-e', '--edges',
+                        default = False,
+                        type = bool,
+                        help = 'Save histogram bin edges')
 
     args = parser.parse_args()
 

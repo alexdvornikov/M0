@@ -3,7 +3,7 @@
 #SBATCH --job-name=m1_histos
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
-#SBATCH --time=10:00:00
+#SBATCH --time=48:00:00
 #SBATCH --constraint=haswell
 #SBATCH --account=dune
 #SBATCH --qos=shared

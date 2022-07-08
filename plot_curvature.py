@@ -1,5 +1,11 @@
 # Example usage
-# python3 plot_curvature.py distortions.npy
+# python3 plot_curvature.py
+
+
+# Put hb_counts.npy, hb_pos.npy
+# and hist2d_zx.npy, hist2d_zy.npy
+# in working directory or add appropriate paths to np.load() in this script. 
+
 from utils_m1 import *
 # mpl.rc('text', usetex = True)
 # mpl.rc('font', family='SignPainter')
