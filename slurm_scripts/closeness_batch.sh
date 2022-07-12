@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=m0_US_sel
-#SBATCH --output=output-%j.txt
-#SBATCH --error=output-%j.txt
+#SBATCH --output=log/output-%j.txt
+#SBATCH --error=log/output-%j.txt
 #
 #SBATCH --time=10:00:00
 #SBATCH --constraint=haswell

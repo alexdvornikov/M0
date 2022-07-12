@@ -40,8 +40,6 @@ def closeness(trackA, trackB, metric = 'hit'):
         posAMin, posBMin = posPairs[posPairMin]
 
         midpoint = np.mean([posAMin, posBMin], axis = 0)
-        print("mean position", midpoint)
-        
         return d, midpoint
 
     elif metric == 'PCA':
@@ -114,8 +112,6 @@ def closeness(trackA, trackB, metric = 'hit'):
                 pocaA = Ae + l*Ahat
 
         midpoint = np.mean([pocaA, pocaB], axis = 0)
-        print("mean position", midpoint)
-
         return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5), midpoint
             
     else:
@@ -199,8 +195,6 @@ def main(args):
     if args.o:
         hitMid = np.array(hitMid)
         PCAmid = np.array(PCAmid)
-        print(hitMid.shape)
-        print(PCAmid.shape)
         
         outArray = np.array([Afile, Bfile,
                              Aid, Bid,
