@@ -83,7 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('--outdir','-o',
 			required=True,
 			type=str)
-    parser.add_argument('--batchDiv', 'b',
+    parser.add_argument('--batchDiv', '-b',
                         default = 1,
                         type = int)
 

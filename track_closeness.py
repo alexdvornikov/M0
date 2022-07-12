@@ -38,23 +38,27 @@ def closeness(trackA, trackB, metric = 'hit'):
         d = np.min(pwd)
         posPairMin = np.argmin(pwd)
         posAMin, posBMin = posPairs[posPairMin]
-        return (d)
+
+        midpoint = np.mean([posAMin, posBMin], axis = 0)
+        print("mean position", midpoint)
+        
+        return d, midpoint
 
     elif metric == 'PCA':
-        As = np.array([trackA['start'][0],
-                       trackA['start'][1],
-                       trackA['start'][2]])
-        Ae = np.array([trackA['end'][0],
-                       trackA['end'][1],
-                       trackA['end'][2]])
+        As = np.array([trackA['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                       trackA['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                       trackA['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+        Ae = np.array([trackA['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                       trackA['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                       trackA['end'][2] + my_geometry.tpc_offsets[0][2]*10])
         Ahat = As - Ae
         
-        Bs = np.array([trackB['start'][0],
-                       trackB['start'][1],
-                       trackB['start'][2]])
-        Be = np.array([trackB['end'][0],
-                       trackB['end'][1],
-                       trackB['end'][2]])
+        Bs = np.array([trackB['start'][0] + my_geometry.tpc_offsets[0][0]*10,
+                       trackB['start'][1] + my_geometry.tpc_offsets[0][1]*10,
+                       trackB['start'][2] + my_geometry.tpc_offsets[0][2]*10])
+        Be = np.array([trackB['end'][0] + my_geometry.tpc_offsets[0][0]*10,
+                       trackB['end'][1] + my_geometry.tpc_offsets[0][1]*10,
+                       trackB['end'][2] + my_geometry.tpc_offsets[0][2]*10])
         Bhat = Bs - Be
                 
         det = np.dot(Ahat, Ahat)*np.dot(Bhat, Bhat) - np.power(np.dot(Ahat, Bhat), 2)
@@ -109,7 +113,10 @@ def closeness(trackA, trackB, metric = 'hit'):
             else:
                 pocaA = Ae + l*Ahat
 
-        return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5)
+        midpoint = np.mean([pocaA, pocaB], axis = 0)
+        print("mean position", midpoint)
+
+        return np.power(np.dot(pocaA-pocaB, pocaA-pocaB), 0.5), midpoint
             
     else:
         raise ValueError ("this metric is not defined!")
@@ -126,18 +133,24 @@ def main(args):
     global my_geometry
     my_geometry = DetectorGeometry(args.detector, args.geometry)
 
+    minLength = 100.
+    
     rawTracksA = np.array(fA['tracks'])
-    maskA = rawTracksA['length'] > 500.
+    # maskA = rawTracksA['length'] > 500.
+    maskA = rawTracksA['length'] > minLength
     tracksA = rawTracksA[maskA]
 
     tracksAsubset = tracksA[args.b::args.N]
 
     rawTracksB = np.array(fB['tracks'])
-    maskB = rawTracksB['length'] > 500.
+    # maskB = rawTracksB['length'] > 500.
+    maskB = rawTracksB['length'] > minLength
     tracksB = rawTracksB[maskB]
 
     hitDists = []
     PCAdists = []
+    hitMid = []
+    PCAmid = []
     Aid = []
     Bid = []
     Afile = []
@@ -164,20 +177,40 @@ def main(args):
 
                         Ai = trackA['track_id']
                         Bi = trackB['track_id']
-                        d = closeness(trackA, trackB)
-                        dPCA = closeness(trackA, trackB, metric = 'PCA')
+                        dHit, mpHit = closeness(trackA, trackB)
+                        dPCA, mpPCA = closeness(trackA, trackB, metric = 'PCA')
 
                         Aid.append(Ai)
                         Bid.append(Bi)
+                        
                         Afile.append(infileAtag)
                         Bfile.append(infileBtag)
-                        hitDists.append(d)
+
+                        hitDists.append(dHit)
                         PCAdists.append(dPCA)
-                        print ("closeness: " + str(d))
+
+                        hitMid.append(mpHit)
+                        PCAmid.append(mpPCA)
+                        
+                        print ("closeness: " + str(dHit))
                         print ("closeness (PCA): " + str(dPCA))
                     
     if args.o:
-        np.save(args.o, np.array([Afile, Bfile, Aid, Bid, hitDists, PCAdists]))
+        hitMid = np.array(hitMid)
+        PCAmid = np.array(PCAmid)
+        print(hitMid.shape)
+        print(PCAmid.shape)
+        
+        outArray = np.array([Afile, Bfile,
+                             Aid, Bid,
+                             hitDists, PCAdists,
+                             hitMid[:,0],
+                             hitMid[:,1],
+                             hitMid[:,2],
+                             PCAmid[:,0],
+                             PCAmid[:,1],
+                             PCAmid[:,2]])
+        np.save(args.o, outArray)
     else:
         plt.figure()
         bins = np.concatenate([np.linspace(0, 100, 10)[:-1],
