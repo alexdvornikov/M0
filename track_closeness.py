@@ -165,16 +165,7 @@ def main(args):
 
                 if evB['n_ext_trigs'] >= 2:
                     if (trackA['track_id'] > trackB['track_id']) or (fA != fB):
-                        print ("measuring track closeness between tracks:")
-                        print (" ".join(["trackA:",
-                                         str(trackA['track_id']),
-                                         "nhits:",
-                                         str(trackA['nhit'])]))
-                        print (" ".join(["trackB:",
-                                         str(trackB['track_id']),
-                                         "nhits:",
-                                         str(trackB['nhit'])]))
-
+                        
                         Ai = trackA['track_id']
                         Bi = trackB['track_id']
                         dHit, mpHit = closeness(trackA, trackB)
@@ -191,9 +182,19 @@ def main(args):
 
                         hitMid.append(mpHit)
                         PCAmid.append(mpPCA)
-                        
-                        print ("closeness: " + str(dHit))
-                        print ("closeness (PCA): " + str(dPCA))
+
+                        if args.verbose:
+                            print ("measuring track closeness between tracks:")
+                            print (" ".join(["trackA:",
+                                             str(trackA['track_id']),
+                                             "nhits:",
+                                             str(trackA['nhit'])]))
+                            print (" ".join(["trackB:",
+                                             str(trackB['track_id']),
+                                             "nhits:",
+                                             str(trackB['nhit'])]))
+                            print ("closeness: " + str(dHit))
+                            print ("closeness (PCA): " + str(dPCA))
                     
     if args.o:
         hitMid = np.array(hitMid)
@@ -272,6 +273,10 @@ if __name__ == '__main__':
                         default = "",
                         type = str,
                         help='Output file to save the results.')
+    parser.add_argument('-v',
+                        '--verbose',
+                        action = 'store_true',
+                        help = 'Verbose')
 
     args = parser.parse_args()
 
