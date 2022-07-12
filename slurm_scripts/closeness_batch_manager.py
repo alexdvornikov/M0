@@ -3,7 +3,7 @@
 import os
 import argparse
 
-def main(indir, runlist, nJobs, outdir):
+def main(indir, runlist, nFiles, outdir):
     print ("input directory: " + indir)
     print ("runlist file: " + runlist)
     print ("to be processed: " + str(nJobs))
@@ -24,11 +24,10 @@ def main(indir, runlist, nJobs, outdir):
 
     goodRuns = []
     
-    if nJobs < 0:
-        nJobs = 999999999999
+    if nFiles < 0:
+        nFiles = 999999999999
         
-    n_launched = 0
-    for thisRun in runMetaData:
+    for thisRun in runMetaData[:nFiles]:
         conditions_met = [thisRun[key] == value
                           for key, value in runConditions.items()]
         if all(conditions_met):
@@ -37,36 +36,32 @@ def main(indir, runlist, nJobs, outdir):
     for thisRunA in goodRuns:
         for thisRunB in goodRuns:
             if hash(thisRunA['charge_filename']) >= hash(thisRunB['charge_filename']):
-                if n_launched < nJobs:
-                    
-                    rel_infilenameA = 'datalog_'+thisRunA['charge_filename']+'evd.h5'
-                    infileNameA = os.path.join(indir, rel_infilenameA)
+                rel_infilenameA = 'datalog_'+thisRunA['charge_filename']+'evd.h5'
+                infileNameA = os.path.join(indir, rel_infilenameA)
 
-                    rel_infilenameB = 'datalog_'+thisRunB['charge_filename']+'evd.h5'
-                    infileNameB = os.path.join(indir, rel_infilenameB)
+                rel_infilenameB = 'datalog_'+thisRunB['charge_filename']+'evd.h5'
+                infileNameB = os.path.join(indir, rel_infilenameB)
                     
-                    rel_outfileName = '_'.join(['crossing',
-                                                thisRunA['charge_filename'],
-                                                thisRunB['charge_filename'],
-                                                '.npy'])
-                    outfileName = os.path.join(outdir, rel_outfileName)
-
-                    for batchNo in range(args.batchDiv):
-                        sbatch_cmd = " ".join(["sbatch ./closeness_batch.sh",
-                                               infileNameA,
-                                               infileNameB,
-                                               outfileName,
-                                               batchNo,
-                                               args.batchDiv])
+                rel_outfileName = '_'.join(['crossing',
+                                            thisRunA['charge_filename'],
+                                            thisRunB['charge_filename'],
+                                            '.npy'])
+                outfileName = os.path.join(outdir, rel_outfileName)
+                
+                for batchNo in range(args.batchDiv):
+                    sbatch_cmd = " ".join(["sbatch ./closeness_batch.sh",
+                                           infileNameA,
+                                           infileNameB,
+                                           outfileName,
+                                           batchNo,
+                                           args.batchDiv])
                     os.system(sbatch_cmd)
                     
-                    n_launched += 1
-
-                    print ("input A: " + infileNameA)
-                    print ("input B: " + infileNameB)
-                    print ("output: " + outfileName)
-                    print ("sbatch command: " + sbatch_cmd)
-                    print ()
+                print ("input A: " + infileNameA)
+                print ("input B: " + infileNameB)
+                print ("output: " + outfileName)
+                print ("sbatch command: " + sbatch_cmd)
+                print ()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -77,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--runlist','-r',
 			required=True,
 			type=str)
-    parser.add_argument('--nJobs','-n',
+    parser.add_argument('--nFiles','-n',
 			default = -1,
 			type=int)
     parser.add_argument('--outdir','-o',
