@@ -1,10 +1,10 @@
-# Example usage
-# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5
+# Example use
+# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o1 hb_counts.npy -o2 hist2d_zx.npy -o3 hist2d_zy.npy
 
 
 # If interested in timiming the code...
-# from datetime import datetime
-# startTime = datetime.now()
+from datetime import datetime
+startTime = datetime.now()
 # Also need to uncomment a datetime line above __main__ at the bottom of the code. 
 
 from utils_m1 import *
@@ -25,6 +25,7 @@ def main(args):
     downstream = TPC_bounds[0][0][0]
     length_cut = 100 #mm
     epsilon = 10 #mm
+    cm = 0.1 #Conversion from mm to cm
 
     global f
     f = h5py.File(args.infile, 'r')
@@ -40,7 +41,29 @@ def main(args):
 
     output = []
 
+
+    
+
+    print('Number of tracks in file: ' + str( N ))
+    i = 0
+    n_tracks = 0
+    n_selected_tracks = 0
+    check_points = np.linspace(0,N,10) #for progress bar
+
     for thisTrack_idx in track_idx[:N]:
+
+        n_tracks += 1
+
+        #----------------------------------------------
+        # Progress bar (10% increments)
+        #----------------------------------------------
+        if n_tracks % round( check_points[1] ) == 0:
+            i += 1
+            print('Completed ' + str(10*i) + '%')
+            n_tracks = 0
+        #----------------------------------------------
+
+
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))
         evt_idx = thisEvent['id']
@@ -60,8 +83,9 @@ def main(args):
         # Get endpoints
         #----------------------------------------------------------------------------#
         startHitPos, endHitPos = get_extreme_hit_pos(t0,thisTrack,theseHits[0],my_geometry)
-        # Focus on a single TPC for now (avoid positive drift coordinates)
-        if startHitPos[2] > 0 or endHitPos[2] > 0:
+
+        # Focus on a single TPC for now (left of the cathode)
+        if startHitPos[2] > cathode_z or endHitPos[2] > cathode_z:
             continue
         #----------------------------------------------------------------------------#
         # Check anode crossing and plot
@@ -71,7 +95,10 @@ def main(args):
             # For more on get_pca_endpts see utils_m1.py
             ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
             output.append(ds)
+            n_selected_tracks += 1
+            
 
+    print('Number of selected tracks: ' + str(n_selected_tracks))
     # if args.output:
     #     np.save(args.output, output)
 
@@ -90,9 +117,10 @@ def main(args):
     # Bin the offsets and save the counts and bin centers (hexbin)
     #----------------------------------------------------------------------------#
     global plt
-    offset_range = 20
-    hb_dx = plt.hexbin(z/10, dx/10, extent = (downstream/10, 0, -offset_range, offset_range), mincnt=1, gridsize = 50, bins='log')
-    hb_dy = plt.hexbin(z/10, dy/10, extent = (downstream/10, 0, -offset_range, offset_range), mincnt=1, gridsize = 50, bins='log')
+    offset_range = 20 # [cm]
+    grdsize = 50
+    hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+    hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
 
     hb_counts = []
     hb_pos = []
@@ -119,15 +147,64 @@ def main(args):
     hb_pos.append(ys_dy)
 
     hb_counts = np.array( hb_counts, dtype=object )
+    #----------------------------------------------------------------------------#
 
-    if args.output: 
-        np.save('hb_counts.npy', hb_counts)
-        np.save('hb_pos.npy', hb_pos)
+    #----------------------------------------------------------------------------#
+    # 2d histogram for dx, dy offsets in the zx plane (also need yz plane)
+    #----------------------------------------------------------------------------#
+    zbins = round( (anode_z - cathode_z)*cm)
+    xbins = round( (upstream + abs(downstream))*cm )
+    ybins = round( (top + abs(bottom))*cm )
+    # binned_statistic_2d by default gives the mean in each bin (different from hist2d)
+     #----------------------------------------------------------------------------#
+    def get_hist(drift_coord, transverse_coord, dx, dy, extent, bns):
+        dx_hist = binned_statistic_2d(drift_coord, transverse_coord, dx, bins=bns, range=extent)
+        dy_hist = binned_statistic_2d(drift_coord, transverse_coord, dy, bins=bns, range=extent)
+        bin_means = np.array( [dx_hist.statistic, dy_hist.statistic] )
+
+        # bin_edges_dx = np.array( [dx_hist.x_edge,dx_hist.y_edge], dtype=object )
+        # bin_edges_dy = np.array( [dy_hist.x_edge,dy_hist.y_edge], dtype=object )
+
+        # Bin edges should be the same for all of the files. 
+        # Only need to get these once. 
+        # Also the dx and dy edges should be the same just being extra looking at both. 
+        # return bin_means, [bin_edges_dx, bin_edges_dy]
+        return bin_means
+    #----------------------------------------------------------------------------#
+    bns = [zbins,xbins]
+    extent = [(-anode_z*cm,cathode_z*cm), (downstream*cm,upstream*cm)]
+    zxmeans = get_hist(z*cm,x*cm,dx*cm,dy*cm, extent, bns)
+
+    bns = [zbins,ybins]
+    extent = [(-anode_z*cm,cathode_z*cm), (bottom*cm,top*cm)]
+    zymeans = get_hist(z*cm,y*cm,dx*cm,dy*cm, extent, bns)
+
+    #----------------------------------------------------------------------------#
+    if args.output1: 
+
+        # # Save hexbin outputs
+        # np.save('hb_counts.npy', hb_counts)
+        # # np.save('hb_pos.npy', hb_pos)
+
+        # # Save binned_statistic_2d outputs
+        # np.save('hist2d_zx.npy', zxmeans)
+        # np.save('hist2d_zy.npy', zymeans)
+        # # np.save('hist2d_edges.npy', bin_edges_dx)
+
+        np.save(args.output1, hb_counts)
+        np.save(args.output2, zxmeans)
+        np.save(args.output3, zymeans)
+
+        if args.edges:
+            np.save('hb_pos.npy', hb_pos) #hexbin edges 
+            # Don't need the binned_statistic_2d edges since using imshow extent. 
+            # Same for all files. 
 
     f.close()
 
+
     # Show time elapsed for running the code
-    # print(datetime.now() - startTime)
+    print(datetime.now() - startTime)
 
 if __name__ == '__main__': 
     import argparse
@@ -147,10 +224,22 @@ if __name__ == '__main__':
                         default = './detector_properties/module0.yaml',
                         type = str,
                         help = 'path to the detector properties YAML')
-    parser.add_argument('-o', '--output',
-                        default = True,
+    parser.add_argument('-o1', '--output1',
+                        default = '',
+                        type = str,
+                        help = '1st output file')
+    parser.add_argument('-o2', '--output2',
+                        default = '',
+                        type = str,
+                        help = '2nd output file')
+    parser.add_argument('-o3', '--output3',
+                        default = '',
+                        type = str,
+                        help = '3rd output file')
+    parser.add_argument('-e', '--edges',
+                        default = False,
                         type = bool,
-                        help = 'save the data which passes the selection to a file')
+                        help = 'Save histogram bin edges')
 
     args = parser.parse_args()
 

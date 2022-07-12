@@ -15,8 +15,8 @@ import seaborn as sns
 import plotly.graph_objects as go
 sns.set_theme(context='talk', style='white')
 # Pretty fonts for figures (if have LaTex enabled)
-mpl.rc('text', usetex = True)
-mpl.rc('font', family='SignPainter')
+# mpl.rc('text', usetex = True)
+# mpl.rc('font', family='SignPainter')
 
 
 # Custom libraries (in current directory)
