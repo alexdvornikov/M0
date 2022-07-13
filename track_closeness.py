@@ -144,9 +144,9 @@ def main(args):
     maskB = rawTracksB['length'] > minLength
     tracksB = rawTracksB[maskB]
 
-    hitDists = []
+    # hitDists = []
     PCAdists = []
-    hitMid = []
+    # hitMid = []
     PCAmid = []
     Aid = []
     Bid = []
@@ -165,7 +165,7 @@ def main(args):
                         
                         Ai = trackA['track_id']
                         Bi = trackB['track_id']
-                        dHit, mpHit = closeness(trackA, trackB)
+                        # dHit, mpHit = closeness(trackA, trackB)
                         dPCA, mpPCA = closeness(trackA, trackB, metric = 'PCA')
 
                         Aid.append(Ai)
@@ -174,10 +174,10 @@ def main(args):
                         Afile.append(infileAtag)
                         Bfile.append(infileBtag)
 
-                        hitDists.append(dHit)
+                        # hitDists.append(dHit)
                         PCAdists.append(dPCA)
 
-                        hitMid.append(mpHit)
+                        # hitMid.append(mpHit)
                         PCAmid.append(mpPCA)
 
                         if args.verbose:
@@ -190,19 +190,20 @@ def main(args):
                                              str(trackB['track_id']),
                                              "nhits:",
                                              str(trackB['nhit'])]))
-                            print ("closeness: " + str(dHit))
+                            # print ("closeness (Hit): " + str(dHit))
                             print ("closeness (PCA): " + str(dPCA))
                     
     if args.o:
-        hitMid = np.array(hitMid)
+        # hitMid = np.array(hitMid)
         PCAmid = np.array(PCAmid)
         
         outArray = np.array([Afile, Bfile,
                              Aid, Bid,
-                             hitDists, PCAdists,
-                             hitMid[:,0],
-                             hitMid[:,1],
-                             hitMid[:,2],
+                             # hitDists,
+                             PCAdists,
+                             # hitMid[:,0],
+                             # hitMid[:,1],
+                             # hitMid[:,2],
                              PCAmid[:,0],
                              PCAmid[:,1],
                              PCAmid[:,2]])
