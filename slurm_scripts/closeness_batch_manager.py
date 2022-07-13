@@ -27,12 +27,21 @@ def main(indir, runlist, nFiles, outdir, batchDiv):
     if nFiles < 0:
         nFiles = 999999999999
         
-    for thisRun in runMetaData[:nFiles]:
+    for thisRun in runMetaData:
         conditions_met = [thisRun[key] == value
                           for key, value in runConditions.items()]
-        if all(conditions_met):
+
+        rel_infilename = 'datalog_'+thisRun['charge_filename']+'evd.h5'
+        infileName = os.path.join(indir, rel_infilename)
+
+        file_exists = os.path.exists(infileName)
+        if all(conditions_met) and file_exists:
             goodRuns.append(thisRun)
 
+    goodRuns = goodRuns[:nFiles]
+            
+    print ("Using these runs:", goodRuns)
+            
     for thisRunA in goodRuns:
         for thisRunB in goodRuns:
             if hash(thisRunA['charge_filename']) >= hash(thisRunB['charge_filename']):
