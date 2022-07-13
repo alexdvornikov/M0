@@ -3,10 +3,10 @@
 import os
 import argparse
 
-def main(indir, runlist, nFiles, outdir):
+def main(indir, runlist, nFiles, outdir, batchDiv):
     print ("input directory: " + indir)
     print ("runlist file: " + runlist)
-    print ("to be processed: " + str(nJobs))
+    print ("to be processed: " + str(nFiles))
     print ("output directory: " + outdir)
 
     print ("reading runlist...")
@@ -42,26 +42,28 @@ def main(indir, runlist, nFiles, outdir):
                 rel_infilenameB = 'datalog_'+thisRunB['charge_filename']+'evd.h5'
                 infileNameB = os.path.join(indir, rel_infilenameB)
                     
-                rel_outfileName = '_'.join(['crossing',
-                                            thisRunA['charge_filename'],
-                                            thisRunB['charge_filename'],
-                                            '.npy'])
-                outfileName = os.path.join(outdir, rel_outfileName)
                 
                 for batchNo in range(args.batchDiv):
+                    rel_outfileName = '_'.join(['crossing',
+                                                thisRunA['charge_filename'],
+                                                thisRunB['charge_filename'],
+                                                str(batchNo),
+                                                '.npy'])
+                    outfileName = os.path.join(outdir, rel_outfileName)
+
                     sbatch_cmd = " ".join(["sbatch ./closeness_batch.sh",
                                            infileNameA,
                                            infileNameB,
                                            outfileName,
-                                           batchNo,
-                                           args.batchDiv])
+                                           str(batchNo),
+                                           str(batchDiv)])
+                    print ("input A: " + infileNameA)
+                    print ("input B: " + infileNameB)
+                    print ("output: " + outfileName)
+                    print ("sbatch command: " + sbatch_cmd)
+                    print ()
+
                     os.system(sbatch_cmd)
-                    
-                print ("input A: " + infileNameA)
-                print ("input B: " + infileNameB)
-                print ("output: " + outfileName)
-                print ("sbatch command: " + sbatch_cmd)
-                print ()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
