@@ -8,6 +8,8 @@ from datetime import datetime
 startTime = datetime.now()
 # Also need to uncomment a datetime line above __main__ at the bottom of the code. 
 
+from tqdm import tqdm
+
 from utils_m1 import *
     
 def main(args):
@@ -47,23 +49,9 @@ def main(args):
 
     print('Number of tracks in file: ' + str( N ))
     i = 0
-    n_tracks = 0
     n_selected_tracks = 0
-    check_points = np.linspace(0,N,10) #for progress bar
 
-    for thisTrack_idx in track_idx[:N]:
-
-        n_tracks += 1
-
-        #----------------------------------------------
-        # Progress bar (10% increments)
-        #----------------------------------------------
-        if n_tracks % round( check_points[1] ) == 0:
-            i += 1
-            print('Completed ' + str(10*i) + '%')
-            n_tracks = 0
-        #----------------------------------------------
-
+    for thisTrack_idx in tqdm(track_idx[:N]):
 
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))

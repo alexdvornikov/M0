@@ -129,7 +129,8 @@ def main(args):
     global my_geometry
     my_geometry = DetectorGeometry(args.detector, args.geometry)
 
-    minLength = 100. 
+    # minLength = 100. 
+    minLength = 250.
     # minLength = 500.
    
     rawTracksA = np.array(fA['tracks'])
