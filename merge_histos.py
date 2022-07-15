@@ -1,9 +1,9 @@
 # Output three histograms. 
 # One hexbin and two binned_statistic_2d. 
 
-# python3 merge_histos.py -i /Users/alex/Desktop/hists/hb -o1 hb_counts_merged.npy 
-# python3 merge_histos.py -i /Users/alex/Desktop/hists/zx -o2 hist2d_zx_merged.npy 
-# python3 merge_histos.py -i /Users/alex/Desktop/hists/zy -o3 hist2d_zy_merged.npy
+# python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/hb -o1 hb_counts_2anodes_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/zx -o2 hist2d_zx_2anodes_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/zy -o3 hist2d_zy_2anodes_merged.npy
 
 import os 
 import argparse

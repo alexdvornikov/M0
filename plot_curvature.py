@@ -15,6 +15,8 @@ def main(args):
     global TPC_bounds, anode_z, cathode_z, top, bottom, upstream, downstream
     global length_cut
     global epsilon
+    global fs 
+    fs = 10 # Font size for plots
 
     my_geometry = DetectorGeometry(args.detector, args.geometry)
     TPC_bounds = get_TPC_bounds()
@@ -38,8 +40,10 @@ def main(args):
         major_ticks_y = np.arange(-90, 90, 10)
         minor_ticks_y = np.arange(-90, 90, 5)
 
-        ax.set_xticklabels( major_ticks_x )
-        ax.set_yticklabels( major_ticks_y ) 
+        ax.vlines(x=0 , ymin = -90, ymax = 90, colors='grey', linestyles='-', lw=2)
+
+        ax.set_xticklabels( major_ticks_x , fontsize = fs)
+        ax.set_yticklabels( major_ticks_y, fontsize=fs ) 
 
         ax.set_xticks(major_ticks_x)
         ax.set_xticks(minor_ticks_x, minor=True)
@@ -47,7 +51,7 @@ def main(args):
         ax.set_yticks(minor_ticks_y, minor=True)
         ax.tick_params(axis='both', which='minor', labelsize=fs)
 
-        ax.grid(which='both', color = 'white', linestyle = '--', linewidth = 1)
+        ax.grid(which='both', color = 'white', linestyle = '--', linewidth = 0)
         ax.grid(which='minor', alpha=1)
         ax.grid(which='major', alpha=1)
 
@@ -66,20 +70,23 @@ def main(args):
     #----------------------------------------------------------------------------#
     def hexbin_config( ax, hb, fs ):
 
-        offset_range = 2
+        offset_range = 5
         # offset_range = 20
 
         major_ticks_x = np.arange(-35, 35, 5)
         minor_ticks_x = np.arange(-35, 35, 1)
-        major_ticks_y = np.arange(-25, 25, 5)
-        minor_ticks_y = np.arange(-21, 21, 1)
-        
+        major_ticks_y = np.arange(-5, 5, 1)
+        minor_ticks_y = np.arange(-5, 5, 1)
 
+        ax.set_xticklabels( major_ticks_x, fontsize = fs )
+        ax.set_yticklabels( major_ticks_y, fontsize = fs ) 
+        
         # ax.set_xticklabels( major_ticks_x )
         # ax.set_yticklabels( major_ticks_y ) 
 
-        ax.hlines(y=minor_ticks_y , xmin = -anode_z, xmax = anode_z, colors='white', linestyles='--', lw=1)
-        ax.vlines(x=major_ticks_x , ymin = -offset_range, ymax = offset_range, colors='white', linestyles='--', lw=1)
+        # ax.hlines(y=minor_ticks_y , xmin = -anode_z, xmax = anode_z, colors='white', linestyles='--', lw=1)
+        # ax.vlines(x=major_ticks_x , ymin = -offset_range, ymax = offset_range, colors='white', linestyles='--', lw=1)
+        ax.vlines(x=0 , ymin = -offset_range, ymax = offset_range, colors='grey', linestyles='-', lw=2)
 
         ax.set_xticks(major_ticks_x)
         ax.set_xticks(minor_ticks_x, minor=True)
@@ -95,7 +102,6 @@ def main(args):
         # ax.set_xlim(-anode_z*cm,cathode_z*cm)
         # ax.set_ylim(-offset_range, offset_range)
 
-        # ax.axis([-anode_z*cm, anode_z*cm, -1, 1])
         ax.axis([-anode_z*cm, anode_z*cm, -offset_range, offset_range])
         # ax.axis([-anode_z*cm, cathode_z*cm, -offset_range, offset_range])
         cb = fig.colorbar(hb, ax=ax)
@@ -109,7 +115,8 @@ def main(args):
     #----------------------------------------------------------------------------#
     # Load hexbin data
     #----------------------------------------------------------------------------#
-    hb_counts = np.load('hb_counts_2anodes.npy', allow_pickle=True)
+    hb_counts = np.load('hb_counts_2anodes_merged.npy', allow_pickle=True)
+    # hb_counts = np.load('hb_counts_2anodes.npy', allow_pickle=True)
     hb_pos = np.load('hb_pos_2anodes.npy', allow_pickle=True)
     # hb_counts = np.load('hb_counts_merged.npy', allow_pickle=True)
     # hb_pos = np.load('hb_pos.npy', allow_pickle=True)
@@ -131,8 +138,11 @@ def main(args):
         h2d_vals = np.load(file, allow_pickle=True)
         return h2d_vals[0].T, h2d_vals[1].T
 
-    dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_2anodes.npy')
-    dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_2anodes.npy')
+    dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_2anodes_merged.npy')
+    dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_2anodes_merged.npy')
+
+    # dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_2anodes.npy')
+    # dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_2anodes.npy')
 
     # dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_merged.npy')
     # dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_merged.npy')
@@ -141,16 +151,17 @@ def main(args):
     # Plot hexbin deviation vs drift coordinate (using [cm] units)
     #----------------------------------------------------------------------------#
     global plt # Only need to do this once per file
-    fs = 15 # Font size
-    fig, axes = plt.subplots(2,1,figsize=(16, 4),sharex=True,sharey=True)
+    # fs = 10 # Font size
+    grdsize = 2*round(2*anode_z*cm)
+    fig, axes = plt.subplots(2,1,figsize=(20, 4),sharex=True,sharey=True)
     ax = axes[0]
-    hb = ax.hexbin(x_dx, y_dx, C=counts_dx, gridsize = 50, cmap='viridis') #bins ='log'
+    hb = ax.hexbin(x_dx, y_dx, C=counts_dx, gridsize = grdsize, cmap='viridis', bins ='log') #bins ='log'
     ax.set_ylabel('$\mathrm{\Delta x}$ [cm]', fontsize = fs)
     hexbin_config(ax,hb,fs)
 
 
     ax = axes[1]
-    hb = ax.hexbin(x_dy, y_dy, C=counts_dy, gridsize = 50, cmap='viridis') #bins ='log'
+    hb = ax.hexbin(x_dy, y_dy, C=counts_dy, gridsize = grdsize, cmap='viridis', bins ='log') #bins ='log'
     ax.set_ylabel('$\mathrm{\Delta y}$ [cm]', fontsize = fs)
     ax.set_xlabel('z [cm]', fontsize = fs)
     hexbin_config(ax,hb,fs)
@@ -169,8 +180,8 @@ def main(args):
     # global plt
     fig, axes = plt.subplots(1,2, figsize=(4, 4), sharex=True, sharey=True)
 
-    fs = 15 # Font size
-    vmax = 2 # Range on colorbar [cm]
+    # fs = 10 # Font size
+    vmax = 0.5 # Range on colorbar [cm]
     extent = [-anode_z*cm,anode_z*cm,downstream*cm,upstream*cm]
     # extent = [-anode_z*cm,cathode_z*cm,downstream*cm,upstream*cm]
     kwargs = dict(
@@ -198,7 +209,8 @@ def main(args):
     h2d_config( ax, extent, fs )
 
     cax,kw = mpl.colorbar.make_axes(axes.flatten())
-    cbar = plt.colorbar(im, cax=cax, label='[cm]')
+    cbar = plt.colorbar(im, cax=cax)
+    cbar.set_label(label='[cm]', size=fs)
     cbar.ax.tick_params(labelsize=fs)
     # plt.show()
     #----------------------------------------------------------------------------#
@@ -210,8 +222,8 @@ def main(args):
     # global plt
     fig, axes = plt.subplots(1,2, figsize=(3, 6), sharex=True, sharey=True)
 
-    fs = 15 # Font size
-    vmax = 2 # Range on colorbar [cm]
+    # fs = 10 # Font size
+    vmax = 0.5 # Range on colorbar [cm]
     extent = [-anode_z*cm,anode_z*cm, bottom*cm,top*cm]
     # extent = [-anode_z*cm,cathode_z*cm, bottom*cm,top*cm]
     kwargs = dict(
@@ -240,7 +252,8 @@ def main(args):
 
 
     cax,kw = mpl.colorbar.make_axes(axes.flatten())
-    cbar = plt.colorbar(im, cax=cax, label='[cm]')
+    cbar = plt.colorbar(im, cax=cax)
+    cbar.set_label(label='[cm]', size=fs)
     cbar.ax.tick_params(labelsize=fs)
 
     plt.show()
