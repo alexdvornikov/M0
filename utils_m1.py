@@ -161,6 +161,30 @@ def distortions(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
     return output
 
 
+
+def distortions_2anodes(t0, geometry, pos3d, start,end):
+
+    output = {}
+    pos3d = np.column_stack( [ pos3d[0], pos3d[1], pos3d[2] ] )
+    output['reco'] = pos3d
+
+
+    # Only use anode-to-anode crossing endpoints for the line fit
+    coords = np.array( [start,end] )   
+    pca = PCA(1)
+    pca.fit(coords)
+    
+    v_dir = pca.components_[0]
+    r0 = coords.mean(axis=0)
+        
+    # "True" track
+    t_par = (pos3d - r0).dot(v_dir)
+    true_track = r0 + t_par[:,None] * v_dir[None,:]
+    output['true'] = true_track
+    
+    return output
+
+
     
 def get_TPC_bounds():
     bounds = []

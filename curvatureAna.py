@@ -26,6 +26,7 @@ def main(args):
     length_cut = 100 #mm
     epsilon = 10 #mm
 
+
     global f
     f = h5py.File(args.infile, 'r')
     data = Data(f)
@@ -56,6 +57,8 @@ def main(args):
 
     output = []
 
+    print(N)
+
     for thisTrack_idx in track_idx[:N]:
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))
@@ -80,13 +83,16 @@ def main(args):
         corrected_endpoints.append(startHitPos)
         corrected_endpoints.append(endHitPos)
 
-        # Focus on a single TPC for now (avoid positive drift coordinates)
-        if startHitPos[2] > 0 or endHitPos[2] > 0:
-            continue
+        # # Focus on a single TPC for now (avoid positive drift coordinates)
+        # if startHitPos[2] > 0 or endHitPos[2] > 0:
+        #     continue
         #----------------------------------------------------------------------------#
         # Check anode crossing and plot
-        #----------------------------------------------------------------------------#
-        if is_anode_piercer(startHitPos, endHitPos, anode_z, epsilon):
+        # #----------------------------------------------------------------------------#
+        # print(startHitPos[2])
+        # print(endHitPos[2])
+        if is_both_anodes_piercer(startHitPos, endHitPos, anode_z, epsilon):
+        # if is_anode_piercer(startHitPos, endHitPos, anode_z, epsilon):
 
             # For more on get_pca_endpts see utils_m1.py
             ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
@@ -136,57 +142,57 @@ def main(args):
 
     x, y, z = reco_coords.T
     dx, dy, dz = (reco_coords - true_coords).T
-    #----------------------------------------------------------------------------#
-    # Plot deviation vs drift coordinate
-    #----------------------------------------------------------------------------#
-    global plt
-    fig, axes = plt.subplots(2,1,figsize=(8, 8),sharex=True,sharey=True)
+    # #----------------------------------------------------------------------------#
+    # # Plot deviation vs drift coordinate
+    # #----------------------------------------------------------------------------#
+    # global plt
+    # fig, axes = plt.subplots(2,1,figsize=(8, 8),sharex=True,sharey=True)
 
-    major_ticks_x = np.arange(-35, 5, 5)
-    minor_ticks_x = np.arange(-35, 5, 1)
-    major_ticks_y = np.arange(-15, 15, 5)
-    minor_ticks_y = np.arange(-15, 15, 1)
+    # major_ticks_x = np.arange(-35, 5, 5)
+    # minor_ticks_x = np.arange(-35, 5, 1)
+    # major_ticks_y = np.arange(-15, 15, 5)
+    # minor_ticks_y = np.arange(-15, 15, 1)
 
-    ax = axes[0]
-    # ax.scatter(z/10, dx/10)
-    ax.hexbin(z/10, dx/10, mincnt=1, cmap='viridis', bins='log')
-    ax.set_ylabel('$\mathrm{\Delta x}$ [cm]')
-    # ax.set_xticks(np.arange(0, 35, 5))
-    # ax.set_yticks(np.arange(-10, 10, 5))
-    # ax.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
+    # ax = axes[0]
+    # # ax.scatter(z/10, dx/10)
+    # ax.hexbin(z/10, dx/10, mincnt=1, cmap='viridis', bins='log')
+    # ax.set_ylabel('$\mathrm{\Delta x}$ [cm]')
+    # # ax.set_xticks(np.arange(0, 35, 5))
+    # # ax.set_yticks(np.arange(-10, 10, 5))
+    # # ax.grid(color = 'grey', linestyle = '--', linewidth = 0.5)
 
-    ax.set_xticks(major_ticks_x)
-    ax.set_xticks(minor_ticks_x, minor=True)
-    ax.set_yticks(major_ticks_y)
-    ax.set_yticks(minor_ticks_y, minor=True)
+    # ax.set_xticks(major_ticks_x)
+    # ax.set_xticks(minor_ticks_x, minor=True)
+    # ax.set_yticks(major_ticks_y)
+    # ax.set_yticks(minor_ticks_y, minor=True)
 
-    ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
-    ax.grid(which='minor', alpha=0.2)
-    ax.grid(which='major', alpha=0.5)
+    # ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
+    # ax.grid(which='minor', alpha=0.2)
+    # ax.grid(which='major', alpha=0.5)
 
-    ax = axes[1]
-    # ax.scatter(z/10, dy/10)
-    ax.hexbin(z/10, dy/10, mincnt=1, cmap='viridis', bins='log')
-    ax.set_ylabel('$\mathrm{\Delta y}$ [cm]')
-    ax.set_xlabel('z [cm]')
-    # ax.set_xticks(np.arange(0, 35, 5))
-    # ax.set_yticks(np.arange(-10, 10, 5))
+    # ax = axes[1]
+    # # ax.scatter(z/10, dy/10)
+    # ax.hexbin(z/10, dy/10, mincnt=1, cmap='viridis', bins='log')
+    # ax.set_ylabel('$\mathrm{\Delta y}$ [cm]')
+    # ax.set_xlabel('z [cm]')
+    # # ax.set_xticks(np.arange(0, 35, 5))
+    # # ax.set_yticks(np.arange(-10, 10, 5))
 
-    ax.set_xticks(major_ticks_x)
-    ax.set_xticks(minor_ticks_x, minor=True)
-    ax.set_yticks(major_ticks_y)
-    ax.set_yticks(minor_ticks_y, minor=True)
+    # ax.set_xticks(major_ticks_x)
+    # ax.set_xticks(minor_ticks_x, minor=True)
+    # ax.set_yticks(major_ticks_y)
+    # ax.set_yticks(minor_ticks_y, minor=True)
 
-    ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
-    ax.grid(which='minor', alpha=0.2)
-    ax.grid(which='major', alpha=0.5)
+    # ax.grid(which='both', color = 'grey', linestyle = '--', linewidth = 0.5)
+    # ax.grid(which='minor', alpha=0.2)
+    # ax.grid(which='major', alpha=0.5)
 
-    ax.set_xlim(-32,0)
-    ax.set_ylim(-10, 10)
+    # ax.set_xlim(-32,0)
+    # ax.set_ylim(-10, 10)
 
-    plt.show()
-    # plt.savefig('res.eps')
-    #----------------------------------------------------------------------------#
+    # plt.show()
+    # # plt.savefig('res.eps')
+    # #----------------------------------------------------------------------------#
 
     #----------------------------------------------------------------------------#
     # Plot face projection

@@ -29,7 +29,18 @@ def is_anode_piercer(track_start, track_end, anode_z, epsilon):
     p1Cross = approx_equals(abs(p1_z), anode_z, epsilon)
     p2Cross = approx_equals(abs(p2_z), anode_z, epsilon)
     return p1Cross or p2Cross
-    
+
+
+# If have two TPCs and two anodes can check if cross both. 
+def is_both_anodes_piercer(track_start, track_end, anode_z, epsilon):
+    p1_z = track_start[2]
+    p2_z = track_end[2]
+
+    p1Cross = approx_equals(abs(p1_z), anode_z, epsilon)
+    p2Cross = approx_equals(abs(p2_z), anode_z, epsilon)
+    return p1Cross and p2Cross
+
+
 def is_top_piercer(track_start, track_end):
     p1_y = track_start[1]
     p2_y = track_end[1]
@@ -55,7 +66,7 @@ def is_upstream_piercer(track_start, track_end):
     return p1Cross or p2Cross
         
 def is_downstream_piercer(track_start, track_end):
-    p1_x = tracK_start[0]
+    p1_x = track_start[0]
     p2_x = track_end[0]
 
     p1Cross = approx_equals(p1_x, downstream, epsilon)
