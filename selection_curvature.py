@@ -2,6 +2,9 @@
 # python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o1 hb_counts.npy -o2 hist2d_zx.npy -o3 hist2d_zy.npy
 # python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o1 hb_counts_2anodes.npy -o2 hist2d_zx_2anodes.npy -o3 hist2d_zy_2anodes.npy
 
+# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o4 hist3d.npy
+# python3 selection_curvature.py ~/Desktop/events_2022_02_09_17_23_09_CET.gz.h5 -o4 hist3d.npy
+
 
 # If interested in timiming the code...
 from datetime import datetime
@@ -201,6 +204,30 @@ def main(args):
     zymeans = get_hist(z*cm,y*cm,dx*cm,dy*cm, extent, bns)
 
     #----------------------------------------------------------------------------#
+    # 3d histograms (for quiver plot)
+    #----------------------------------------------------------------------------#
+    def get_3dhist(x,y,z, dx, dy, dz, extent, bns):
+        s = (x,y,z)
+        dx_hist = binned_statistic_dd(sample = s, values = dx, bins=bns, range=extent)
+        dy_hist = binned_statistic_dd(sample = s, values = dy, bins=bns, range=extent)
+        dz_hist = binned_statistic_dd(sample = s, values = dz, bins=bns, range=extent)
+        bin_means = np.array( [dx_hist.statistic, dy_hist.statistic, dz_hist.statistic] )
+        return bin_means
+
+
+    bns = [xbins, ybins, zbins]
+    print( bns )
+    extent = [ (downstream*cm,upstream*cm), (bottom*cm,top*cm), (-anode_z*cm,anode_z*cm)]
+    xyzmeans = get_3dhist(x,y,z,dx,dy,dz, extent, bns)
+    #----------------------------------------------------------------------------#
+
+    if args.output4: 
+
+        np.save(args.output4, xyzmeans)
+
+        # if args.edges:
+        #     np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
+
     if args.output1: 
 
         # # Save hexbin outputs
@@ -215,6 +242,8 @@ def main(args):
         np.save(args.output1, hb_counts)
         np.save(args.output2, zxmeans)
         np.save(args.output3, zymeans)
+
+        np.save(args.output4, xyzmeans)
 
         if args.edges:
             np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
@@ -257,6 +286,10 @@ if __name__ == '__main__':
                         default = '',
                         type = str,
                         help = '3rd output file')
+    parser.add_argument('-o4', '--output4',
+                        default = '',
+                        type = str,
+                        help = '4th output file')
     parser.add_argument('-e', '--edges',
                         default = False,
                         type = bool,

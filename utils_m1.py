@@ -5,6 +5,7 @@ import pandas as pd
 from itertools import cycle
 from scipy import stats
 from scipy.stats import binned_statistic_2d
+from scipy.stats import binned_statistic_dd
 from sklearn.decomposition import PCA
 
 # Plotting stuff
