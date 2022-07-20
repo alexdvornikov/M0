@@ -125,12 +125,6 @@ def main(args):
     x_dx,y_dx = hb_pos[0], hb_pos[1]
     x_dy,y_dy = hb_pos[2], hb_pos[3]
 
-    # # Sanity check for array shapes
-    # # print(counts_dx.shape)
-    # # print(x_dx.shape)
-    # # print(counts_dy.shape)
-    # # print(x_dy.shape)
-
     #----------------------------------------------------------------------------#
     # Load 2d histogram data  
     #----------------------------------------------------------------------------#
@@ -152,7 +146,6 @@ def main(args):
     def load_3dhist(file):
         h3d_vals = np.load(file, allow_pickle=True)
         print(h3d_vals.shape)
-        # print(h3d_vals)
 
         print('Non-empty bins: ')
         print( np.count_nonzero( ~np.isnan( h3d_vals ) )/3 ) #Number of non NaNs 
@@ -160,18 +153,12 @@ def main(args):
         print( np.count_nonzero(np.isnan( h3d_vals ))/3 ) #Number of NaNs 
 
         h3d_vals[np.isnan(h3d_vals)] = 0 #Set NaNs to zeros
-        # h3d_vals = h3d_vals[ ~np.isnan( h3d_vals ) ]
-        # print(h3d_vals[0].shape)
-        # print(h3d_vals)
-        # print(h3d_vals[0])
-        # print(h3d_vals[30])
+        # h3d_vals = h3d_vals[ ~np.isnan( h3d_vals ) ] #Get rid of NaNs (can mess up shape)
         return h3d_vals[0], h3d_vals[1], h3d_vals[2]
         # return h3d_vals[0].T, h3d_vals[1].T, h3d_vals[2].T
     
     dx_3dhist, dy_3dhist, dz_3dhist = load_3dhist('hist3d.npy')
 
-
-    # np.count_nonzero(~np.isnan( h3d_vals ))
 
     # #----------------------------------------------------------------------------#
     # # Plot hexbin deviation vs drift coordinate (using [cm] units)
@@ -200,11 +187,6 @@ def main(args):
     # # fig.colorbar(im, ax=ax)
     # #----------------------------------------------------------------------------#
 
-    # print(dx_hist_zx.shape)
-    # print(dy_hist_zx.shape)
-    # print(dx_hist_zy.shape)
-    # print(dy_hist_zy.shape)
-    # # (62,61)
     # # #----------------------------------------------------------------------------#
     # # # Vector plot  zx (this is not functional, just messing around)
     # # #----------------------------------------------------------------------------#
@@ -216,25 +198,15 @@ def main(args):
     # z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
     # x_grid = np.linspace(downstream*cm,upstream*cm,xbins)
     # y_grid = np.linspace(bottom*cm,top*cm, ybins)
-    # print(z_grid.shape) #61
-    # print(x_grid.shape) #62
-    # print(y_grid.shape) #124
     # xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid)
-    # print(xx.shape)
-    # print(yy.shape)
-    # print(zz.shape)
 
     # zi = len(z_grid)
     # # print(zi)
     # new_array_dx = []
     # for i in range(zi):
     #     b1, b2 = np.meshgrid( dx_hist_zx[:,i],dx_hist_zy[:,i] )
-    #     print(b1.shape)
-    #     print(b2.shape)
     #     new_array_dx.append( np.meshgrid( dx_hist_zx[:,i],dx_hist_zy[:,i] ) )
     # new_array_dx = np.array(new_array_dx)
-    # print(new_array_dx.shape)
-    # # print( dx_hist_zx[:,1].shape )
     # # dz = np.full(dx_hist_zx.shape, 0) # Just messing around for now 
 
     # # # fig, ax = plt.subplots(figsize=(4, 4))
@@ -269,7 +241,7 @@ def main(args):
 
     # fig, ax = plt.subplots(figsize=(4, 4))
     # ax = plt.figure().add_subplot(projection='3d')
-    u, v, w = dx_3dhist, dy_3dhist, dz_3dhist
+    # u, v, w = dx_3dhist, dy_3dhist, dz_3dhist
     # w = 0*w #Set z to zero
 
     # colors = np.sqrt( u*u + v*v + w*w)
@@ -277,29 +249,6 @@ def main(args):
     # norm.autoscale(colors)
 
     # colormap = cm.inferno
-    # print(xx.shape)
-    # print(yy.shape)
-    # print(zz.shape)
-    # print(u.shape)
-    # print(v.shape)
-    # print(w.shape)
-    # print(u)
-    # print(v)
-    # print(w)
-    # blah = w.flatten()
-    # print( np.count_nonzero(np.isnan(blah)) )
-    # print( blah[0] )
-    # print( np.mean( u.flatten() ) )
-    # print( np.mean( v.flatten() ) )
-    # print( np.mean( w.flatten() ) )
-
-    # print(u.shape) 
-    # print(v.shape)
-    # print(w.shape)
-
-    # print(xx.shape)
-    # print(yy.shape)
-    # print(zz.shape)
     # color=colormap(norm(colors))
     # q = ax.quiver(xx, yy, zz, u/colors, v/colors, w/colors)
 
@@ -310,6 +259,7 @@ def main(args):
     u=dx_3dhist.flatten()
     v=dy_3dhist.flatten()
     w=dz_3dhist.flatten()
+    w = 0*w #Set z to zero
 
     # mags = np.sqrt( u*u + v*v + w*w)
     # u = u/mags
@@ -339,9 +289,9 @@ def main(args):
 
     fig = go.Figure(data = go.Cone(
         x=X,y=Y,z=Z, u=U,v=V,w=W,
-        colorscale='Blues',
+        colorscale='viridis', #Blues
         sizemode="scaled", #sizemode="absolute", sizeref=40
-        sizeref=1))
+        sizeref=2))
 
     # fig = go.Figure(data = go.Cone(
     #     x=xx.flatten(),

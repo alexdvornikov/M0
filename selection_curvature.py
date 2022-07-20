@@ -5,6 +5,8 @@
 # python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o4 hist3d.npy
 # python3 selection_curvature.py ~/Desktop/events_2022_02_09_17_23_09_CET.gz.h5 -o4 hist3d.npy
 
+# python3 selection_curvature.py events_2022_02_08_07_36_25_CET.gz.h5 -o1 hist3d_2anodes.npy -o2 hist2d_zx_2anodes.npy -o3 hist2d_zy_2anodes.npy
+
 
 # If interested in timiming the code...
 from datetime import datetime
@@ -118,48 +120,48 @@ def main(args):
     x, y, z = reco_coords.T
     dx, dy, dz = (reco_coords - true_coords).T
 
+    # #----------------------------------------------------------------------------#
+    # # Bin the offsets and save the counts and bin centers (hexbin)
+    # #----------------------------------------------------------------------------#
+    # global plt
+    # offset_range = 5 # [cm]
+    # # offset_range = 20 # [cm]
+    # # hex_bins = ( round(2*anode_z*cm), round( 2*offset_range*cm) )
+    # grdsize = 2*round(2*anode_z*cm) #If have ~2 pixels per cm can allow for such binning
+    # hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, anode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+    # hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, anode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+    # # hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+    # # hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
+
+    # hb_counts = []
+    # hb_pos = []
+    # # Centers of hexbins for dx offsets 
+    # xs_dx = hb_dx.get_offsets()[:, 0] 
+    # ys_dx = hb_dx.get_offsets()[:, 1]
+    # # Centers of hexbins for dy offsets
+    # xs_dy = hb_dy.get_offsets()[:, 0] 
+    # ys_dy = hb_dy.get_offsets()[:, 1]
+    # # Get dx vals
+    # arr_dx = hb_dx.get_array() # Masked array of counts
+    # counts_dx = arr_dx.data # Grab the data, assuming no mask
+    # # Get dy vals
+    # arr_dy = hb_dy.get_array() 
+    # counts_dy = arr_dy.data 
+
+    # hb_counts.append(np.asarray(counts_dx))
+    # hb_counts.append(np.asarray(counts_dy))
+
+    # hb_pos.append(xs_dx)
+    # hb_pos.append(ys_dx)
+
+    # hb_pos.append(xs_dy)
+    # hb_pos.append(ys_dy)
+
+    # hb_counts = np.array( hb_counts, dtype=object )
+    # #----------------------------------------------------------------------------#
+
     #----------------------------------------------------------------------------#
-    # Bin the offsets and save the counts and bin centers (hexbin)
-    #----------------------------------------------------------------------------#
-    global plt
-    offset_range = 5 # [cm]
-    # offset_range = 20 # [cm]
-    # hex_bins = ( round(2*anode_z*cm), round( 2*offset_range*cm) )
-    grdsize = 2*round(2*anode_z*cm) #If have ~2 pixels per cm can allow for such binning
-    hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, anode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
-    hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, anode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
-    # hb_dx = plt.hexbin(z*cm, dx*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
-    # hb_dy = plt.hexbin(z*cm, dy*cm, extent = (-anode_z*cm, cathode_z*cm, -offset_range, offset_range), mincnt=0, gridsize = grdsize, bins='log')
-
-    hb_counts = []
-    hb_pos = []
-    # Centers of hexbins for dx offsets 
-    xs_dx = hb_dx.get_offsets()[:, 0] 
-    ys_dx = hb_dx.get_offsets()[:, 1]
-    # Centers of hexbins for dy offsets
-    xs_dy = hb_dy.get_offsets()[:, 0] 
-    ys_dy = hb_dy.get_offsets()[:, 1]
-    # Get dx vals
-    arr_dx = hb_dx.get_array() # Masked array of counts
-    counts_dx = arr_dx.data # Grab the data, assuming no mask
-    # Get dy vals
-    arr_dy = hb_dy.get_array() 
-    counts_dy = arr_dy.data 
-
-    hb_counts.append(np.asarray(counts_dx))
-    hb_counts.append(np.asarray(counts_dy))
-
-    hb_pos.append(xs_dx)
-    hb_pos.append(ys_dx)
-
-    hb_pos.append(xs_dy)
-    hb_pos.append(ys_dy)
-
-    hb_counts = np.array( hb_counts, dtype=object )
-    #----------------------------------------------------------------------------#
-
-    #----------------------------------------------------------------------------#
-    # 2d histogram for dx, dy offsets in the zx plane (also need yz plane)
+    # 2d histogram for dx, dy offsets in the zx and zy planes
     #----------------------------------------------------------------------------#
     zbins = round( (2*anode_z)*cm) #If crossing anode to anode
     # zbins = round( (anode_z - cathode_z)*cm) #If using single TPC
@@ -209,12 +211,12 @@ def main(args):
     xyzmeans = get_3dhist(x,y,z,dx,dy,dz, extent, bns)
     #----------------------------------------------------------------------------#
 
-    if args.output4: 
+    # if args.output4: 
 
-        np.save(args.output4, xyzmeans)
+    #     np.save(args.output4, xyzmeans)
 
-        # if args.edges:
-        #     np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
+    #     # if args.edges:
+    #     #     np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
 
     if args.output1: 
 
@@ -227,14 +229,14 @@ def main(args):
         # np.save('hist2d_zy.npy', zymeans)
         # # np.save('hist2d_edges.npy', bin_edges_dx)
 
-        np.save(args.output1, hb_counts)
+        # np.save(args.output1, hb_counts)
+        np.save(args.output1, xyzmeans)
         np.save(args.output2, zxmeans)
         np.save(args.output3, zymeans)
 
-        np.save(args.output4, xyzmeans)
 
-        if args.edges:
-            np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
+        # if args.edges:
+            # np.save('hb_pos_2anodes.npy', hb_pos) #hexbin edges 
             # Don't need the binned_statistic_2d edges since using imshow extent. 
             # Same for all files. 
 

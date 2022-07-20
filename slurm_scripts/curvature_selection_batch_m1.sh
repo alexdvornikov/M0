@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=m1_2anode_histos
+#SBATCH --job-name=m1_2anode_3dhistos
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #SBATCH --time=48:00:00

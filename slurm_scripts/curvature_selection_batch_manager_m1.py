@@ -38,7 +38,8 @@ def main(indir, runlist, nfiles, outdir):
                 # rel_infilename = 'datalog_'+thisRun['charge_filename']+'evd.h5' #module0 
                 infileName = os.path.join(indir, rel_infilename)
 
-                rel_outfileName1 = 'hb_counts_2anodes_'+thisRun['charge_filename']+'.npy'
+                rel_outfileName1 = 'hist3d_2anodes_'+thisRun['charge_filename']+'.npy'
+                # rel_outfileName1 = 'hb_counts_2anodes_'+thisRun['charge_filename']+'.npy'
                 rel_outfileName2 = 'hist2d_zx_2_anodes_'+thisRun['charge_filename']+'.npy'
                 rel_outfileName3 = 'hist2d_zy_2anodes_'+thisRun['charge_filename']+'.npy'
                 outfileName1 = os.path.join(outdir, rel_outfileName1)
