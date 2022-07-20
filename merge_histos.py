@@ -1,7 +1,9 @@
 # Output three histograms. 
 # One hexbin and two binned_statistic_2d. 
 
-# python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/hb -o1 hb_counts_2anodes_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists3d/hb -o1 hist3d_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/hb -o1 hb_counts_2anodes_merged.npy
+
 # python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/zx -o2 hist2d_zx_2anodes_merged.npy 
 # python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/zy -o3 hist2d_zy_2anodes_merged.npy
 
@@ -39,8 +41,13 @@ def main(indir,output1,output2,output3):
     #----------------------------------------------------------------------------#
 
 
-    if output1: #hexbin merging 
-        np.save(args.output1, counts)
+    # if output1: #hexbin merging 
+    #     np.save(args.output1, counts)
+
+    if output1: #binned_statistic_dd merging for 3d histo
+        # Now counts are actually means. Need to do a final mean as well. 
+        mean_counts = counts/n_files
+        np.save(args.output1, mean_counts)
 
 
     # binned_statistic_2d merging for zx face

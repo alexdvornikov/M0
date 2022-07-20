@@ -145,12 +145,17 @@ def main(args):
     #----------------------------------------------------------------------------#
     def load_3dhist(file):
         h3d_vals = np.load(file, allow_pickle=True)
-        print(h3d_vals.shape)
+        # print(h3d_vals.shape)
 
-        print('Non-empty bins: ')
-        print( np.count_nonzero( ~np.isnan( h3d_vals ) )/3 ) #Number of non NaNs 
-        print('Empty bins: ')
-        print( np.count_nonzero(np.isnan( h3d_vals ))/3 ) #Number of NaNs 
+        notNaN = np.count_nonzero( ~np.isnan( h3d_vals ) )
+        isNaN = np.count_nonzero(np.isnan( h3d_vals ))
+
+        # print('Non-empty bins: ')
+        # print( notNan/3 ) #Number of non NaNs 
+        # print('Empty bins: ')
+        # print( isNan/3 ) #Number of NaNs 
+
+        print( 'Percent occupied: ', 100*(notNaN/isNaN) )
 
         h3d_vals[np.isnan(h3d_vals)] = 0 #Set NaNs to zeros
         # h3d_vals = h3d_vals[ ~np.isnan( h3d_vals ) ] #Get rid of NaNs (can mess up shape)
@@ -236,8 +241,8 @@ def main(args):
 
 
 
-    import matplotlib.cm as cm
-    from matplotlib.colors import Normalize
+    # import matplotlib.cm as cm
+    # from matplotlib.colors import Normalize
 
     # fig, ax = plt.subplots(figsize=(4, 4))
     # ax = plt.figure().add_subplot(projection='3d')
@@ -283,15 +288,33 @@ def main(args):
             V.append(v[i])
             W.append(w[i])
 
-    print(len(U))
-    print( max(U) )
-    print( min(U) )
 
+    # fig = go.Figure(data = go.Cone(
     fig = go.Figure(data = go.Cone(
         x=X,y=Y,z=Z, u=U,v=V,w=W,
-        colorscale='viridis', #Blues
-        sizemode="scaled", #sizemode="absolute", sizeref=40
-        sizeref=2))
+        # cmax = 5, cmin = 0, 
+        colorscale='Blues', #viridis
+        # sizemode="scaled", #sizemode="absolute", sizeref=40
+        opacity = 0.5,
+        sizeref=2), 
+        layout=plot_theme.layout3d_white) #Load my custom theme
+
+        # starts = dict(
+        #     x = [-25,-15,-5,5,15,25],
+        #     y = [-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40],
+        #     z = [-25,-15,-5,5,15,25]), 
+
+    fig.update_scenes(
+        aspectmode='data', #cube
+        xaxis_range=(downstream*cm,upstream*cm),
+        yaxis_range=(bottom*cm,top*cm),
+        zaxis_range=(-anode_z*cm,anode_z*cm),
+        xaxis_title='x [cm]',
+        yaxis_title='y [cm]',
+        zaxis_title='z [cm]',
+    )
+
+    # fig.write_html("quiver_test.html")
 
     # fig = go.Figure(data = go.Cone(
     #     x=xx.flatten(),

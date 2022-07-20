@@ -85,6 +85,7 @@ def main(args):
 
             # For more on get_pca_endpts see utils_m1.py
             ds = distortions_2anodes(t0, my_geometry, pos3d, startHitPos, endHitPos)
+            # TO DO: CHECK IF ANY TRACK IS CONTRIBUTING TOO MUCH (CLEARLY HUGE DISTORTIONS)
             # ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
             output.append(ds)
             n_selected_tracks += 1

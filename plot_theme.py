@@ -20,7 +20,7 @@ layout_white = dict(
     xaxis_gridcolor=BLACK,
     yaxis_gridcolor=BLACK,
 
-    height=800, width=800,
+    # height=800, width=800,
     showlegend=False,
     font_family="Droid Sans",
 )
