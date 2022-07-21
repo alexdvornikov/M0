@@ -1,4 +1,4 @@
-# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/M0/m1_endpoints
+# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/AA_crossers
 
 # Module1 runlist
 # https://portal.nersc.gov/project/dune/data/Module1/runlist.txt
@@ -54,7 +54,8 @@ def main(indir, runlist, nfiles, outdir):
                 # rel_infilename = 'datalog_'+thisRun['charge_filename']+'evd.h5' #module0 
                 infileName = os.path.join(indir, rel_infilename)
 
-                rel_outfileName = 'selected_'+thisRun['charge_filename']+'.npy'
+                rel_outfileName = 'selected_'+thisRun['charge_filename']+'.npz' #Compressed
+                # rel_outfileName = 'selected_'+thisRun['charge_filename']+'.npy'
                 outfileName = os.path.join(outdir, rel_outfileName)
 
                 # Run sbatch script for module1. 
