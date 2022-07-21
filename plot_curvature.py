@@ -1,11 +1,6 @@
 # Example usage
 # python3 plot_curvature.py
 
-
-# Put hb_counts.npy, hb_pos.npy
-# and hist2d_zx.npy, hist2d_zy.npy
-# in working directory or add appropriate paths to np.load() in this script. 
-
 from utils_m1 import *
 mpl.rc('text', usetex = True)
 mpl.rc('font', family='SignPainter')
@@ -112,58 +107,39 @@ def main(args):
     #----------------------------------------------------------------------------#
 
 
-    #----------------------------------------------------------------------------#
-    # Load hexbin data
-    #----------------------------------------------------------------------------#
-    hb_counts = np.load('hb_counts_2anodes_merged.npy', allow_pickle=True)
-    # hb_counts = np.load('hb_counts_2anodes.npy', allow_pickle=True)
-    hb_pos = np.load('hb_pos_2anodes.npy', allow_pickle=True)
-    # hb_counts = np.load('hb_counts_merged.npy', allow_pickle=True)
-    # hb_pos = np.load('hb_pos.npy', allow_pickle=True)
+    # #----------------------------------------------------------------------------#
+    # # Load hexbin data
+    # #----------------------------------------------------------------------------#
+    # hb_counts = np.load('hb_counts_2anodes_merged.npy', allow_pickle=True)
+    # # hb_counts = np.load('hb_counts_2anodes.npy', allow_pickle=True)
+    # hb_pos = np.load('hb_pos_2anodes.npy', allow_pickle=True)
+    # # hb_counts = np.load('hb_counts_merged.npy', allow_pickle=True)
+    # # hb_pos = np.load('hb_pos.npy', allow_pickle=True)
 
-    counts_dx, counts_dy = hb_counts[0], hb_counts[1]
-    x_dx,y_dx = hb_pos[0], hb_pos[1]
-    x_dy,y_dy = hb_pos[2], hb_pos[3]
+    # counts_dx, counts_dy = hb_counts[0], hb_counts[1]
+    # x_dx,y_dx = hb_pos[0], hb_pos[1]
+    # x_dy,y_dy = hb_pos[2], hb_pos[3]
 
-    #----------------------------------------------------------------------------#
-    # Load 2d histogram data  
-    #----------------------------------------------------------------------------#
-    def load_hist(file):
-        h2d_vals = np.load(file, allow_pickle=True)
-        # print(h2d_vals.shape)
-        return h2d_vals[0].T, h2d_vals[1].T
+    # #----------------------------------------------------------------------------#
+    # # Load 2d histogram data  
+    # #----------------------------------------------------------------------------#
+    # def load_hist(file):
+    #     h2d_vals = np.load(file, allow_pickle=True)
+    #     return h2d_vals[0].T, h2d_vals[1].T
 
     # dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_2anodes_merged.npy')
     # dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_2anodes_merged.npy')
 
-    dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_2anodes.npy')
-    dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_2anodes.npy')
-
-    # dx_hist_zx, dy_hist_zx = load_hist('hist2d_zx_merged.npy')
-    # dx_hist_zy, dy_hist_zy = load_hist('hist2d_zy_merged.npy')
-
     #----------------------------------------------------------------------------#
     def load_3dhist(file):
         h3d_vals = np.load(file, allow_pickle=True)
-        # print(h3d_vals.shape)
-
-        notNaN = np.count_nonzero( ~np.isnan( h3d_vals ) )
-        isNaN = np.count_nonzero(np.isnan( h3d_vals ))
-
-        # print('Non-empty bins: ')
-        # print( notNan/3 ) #Number of non NaNs 
-        # print('Empty bins: ')
-        # print( isNan/3 ) #Number of NaNs 
-
-        print( 'Percent occupied: ', 100*(notNaN/isNaN) )
-
+        # notNaN = np.count_nonzero( ~np.isnan( h3d_vals ) )
+        # isNaN = np.count_nonzero(np.isnan( h3d_vals ))
+        # print( 'Percent occupied: ', 100*(notNaN/isNaN) )
         h3d_vals[np.isnan(h3d_vals)] = 0 #Set NaNs to zeros
-        # h3d_vals = h3d_vals[ ~np.isnan( h3d_vals ) ] #Get rid of NaNs (can mess up shape)
         return h3d_vals[0], h3d_vals[1], h3d_vals[2]
-        # return h3d_vals[0].T, h3d_vals[1].T, h3d_vals[2].T
     
-    dx_3dhist, dy_3dhist, dz_3dhist = load_3dhist('hist3d.npy')
-
+    dx_3dhist, dy_3dhist, dz_3dhist = load_3dhist('hist3d_merged.npy')
 
     # #----------------------------------------------------------------------------#
     # # Plot hexbin deviation vs drift coordinate (using [cm] units)
@@ -192,70 +168,20 @@ def main(args):
     # # fig.colorbar(im, ax=ax)
     # #----------------------------------------------------------------------------#
 
-    # # #----------------------------------------------------------------------------#
-    # # # Vector plot  zx (this is not functional, just messing around)
-    # # #----------------------------------------------------------------------------#
-    # zbins = round( (2*anode_z)*cm)
-    # xbins = round( (upstream + abs(downstream))*cm )
-    # ybins = round( (top + abs(bottom))*cm )
-    # # # bns = [zbins,xbins]
-    # # # extent = [(-anode_z*cm,anode_z*cm), (downstream*cm,upstream*cm)]
-    # z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
-    # x_grid = np.linspace(downstream*cm,upstream*cm,xbins)
-    # y_grid = np.linspace(bottom*cm,top*cm, ybins)
-    # xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid)
 
-    # zi = len(z_grid)
-    # # print(zi)
-    # new_array_dx = []
-    # for i in range(zi):
-    #     b1, b2 = np.meshgrid( dx_hist_zx[:,i],dx_hist_zy[:,i] )
-    #     new_array_dx.append( np.meshgrid( dx_hist_zx[:,i],dx_hist_zy[:,i] ) )
-    # new_array_dx = np.array(new_array_dx)
-    # # dz = np.full(dx_hist_zx.shape, 0) # Just messing around for now 
-
-    # # # fig, ax = plt.subplots(figsize=(4, 4))
-    # # ax = plt.figure().add_subplot(projection='3d')
-    # # ax.quiver(dx_hist_zx, dy_hist_zx, np.full(dx_hist_zx.shape, 0))
-    # # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    # # ax.set_ylabel('$\mathrm{x_{reco}}$ [cm]',fontsize=fs)
-    # # ax.xaxis.set_ticks([])
-    # # ax.yaxis.set_ticks([])
-    # # ax.set_aspect('equal')
-    # # plt.show()
-    # # # ax.quiver(X, Y, u, v)
-
+    #----------------------------------------------------------------------------#
+    # Set up the quiver plot. 
+    #----------------------------------------------------------------------------#
     zbins = round( (2*anode_z)*cm)
     xbins = round( (upstream + abs(downstream))*cm )
     ybins = round( (top + abs(bottom))*cm )
-
     xbins, ybins, zbins = round(xbins), round(ybins), round(zbins)
 
     z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
     x_grid = np.linspace(downstream*cm,upstream*cm,xbins)
     y_grid = np.linspace(bottom*cm,top*cm, ybins)
-    # print(z_grid.shape) #61
-    # print(x_grid.shape) #62
-    # print(y_grid.shape) #124
     xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid, indexing='ij')
 
-
-
-    # import matplotlib.cm as cm
-    # from matplotlib.colors import Normalize
-
-    # fig, ax = plt.subplots(figsize=(4, 4))
-    # ax = plt.figure().add_subplot(projection='3d')
-    # u, v, w = dx_3dhist, dy_3dhist, dz_3dhist
-    # w = 0*w #Set z to zero
-
-    # colors = np.sqrt( u*u + v*v + w*w)
-    # norm = Normalize()
-    # norm.autoscale(colors)
-
-    # colormap = cm.inferno
-    # color=colormap(norm(colors))
-    # q = ax.quiver(xx, yy, zz, u/colors, v/colors, w/colors)
 
     data_length = len( xx.flatten() )
     x=xx.flatten()
@@ -264,19 +190,10 @@ def main(args):
     u=dx_3dhist.flatten()
     v=dy_3dhist.flatten()
     w=dz_3dhist.flatten()
-    w = 0*w #Set z to zero
+    w = 0*w #Set z to zero (we're at some z slices)
 
-    # mags = np.sqrt( u*u + v*v + w*w)
-    # u = u/mags
-    # u = u/mags
-    # v = v/mags
-
-    X = []
-    Y = []
-    Z = []
-    U = []
-    V = []
-    W = []
+    X, Y, Z = [], [], []
+    U, V, W = [], [], []
 
     for i in range(data_length):
         if u[i] != 0:
@@ -289,20 +206,21 @@ def main(args):
             W.append(w[i])
 
 
-    # fig = go.Figure(data = go.Cone(
-    fig = go.Figure(data = go.Cone(
-        x=X,y=Y,z=Z, u=U,v=V,w=W,
-        # cmax = 5, cmin = 0, 
-        colorscale='Blues', #viridis
-        # sizemode="scaled", #sizemode="absolute", sizeref=40
-        opacity = 0.5,
-        sizeref=2), 
-        layout=plot_theme.layout3d_white) #Load my custom theme
+    fig = go.Figure( layout=solarized.layout3d_dark )
+    # Surface for cathode
+    fig.add_trace( go.Surface( x = x_grid, y = y_grid, z= 0*np.ones((ybins,xbins)), 
+                                    colorscale='Gray', showscale=False,
+                                    opacity = 0.5) )
 
-        # starts = dict(
-        #     x = [-25,-15,-5,5,15,25],
-        #     y = [-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40],
-        #     z = [-25,-15,-5,5,15,25]), 
+    # Use plotly's Cone plot for the vector field (aka quiver plot)
+    fig.add_trace( go.Cone(
+        x=X,y=Y,z=Z, u=U,v=V,w=W,
+        # cmax = 0.5, cmin = 0, 
+        colorscale='viridis', 
+        sizemode="absolute", #sizemode="scaled",
+        sizeref = 6,
+        opacity=1) )
+
 
     fig.update_scenes(
         aspectmode='data', #cube
@@ -314,117 +232,95 @@ def main(args):
         zaxis_title='z [cm]',
     )
 
-    # fig.write_html("quiver_test.html")
-
-    # fig = go.Figure(data = go.Cone(
-    #     x=xx.flatten(),
-    #     y=yy.flatten(),
-    #     z=zz.flatten(),
-    #     u=dx_3dhist.flatten(),
-    #     v=dy_3dhist.flatten(),
-    #     w=dz_3dhist.flatten(),
-    #     colorscale='Blues',
-    #     sizemode="absolute",
-    #     sizeref=40),
-    #     render_mode='webgl' )
-
+    fig.write_html("quiver_test.html")
     fig.show()
 
+    # #----------------------------------------------------------------------------#
+    # # Plot zx face projection
+    # #----------------------------------------------------------------------------#
+    # # global plt
+    # fig, axes = plt.subplots(1,2, figsize=(4, 4), sharex=True, sharey=True)
 
-    # ax.quiver(dx_hist_zx, dy_hist_zx, np.full(dx_hist_zx.shape, 0))
-    # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    # ax.set_ylabel('$\mathrm{x_{reco}}$ [cm]',fontsize=fs)
-    # ax.xaxis.set_ticks([])
-    # ax.yaxis.set_ticks([])
-    # ax.set_aspect('equal')
-    # plt.show()
-    # ax.quiver(X, Y, u, v)
-    #----------------------------------------------------------------------------#
-    # Plot zx face projection
-    #----------------------------------------------------------------------------#
-    # global plt
-    fig, axes = plt.subplots(1,2, figsize=(4, 4), sharex=True, sharey=True)
-
-    # fs = 10 # Font size
-    vmax = 0.5 # Range on colorbar [cm]
-    extent = [-anode_z*cm,anode_z*cm,downstream*cm,upstream*cm]
-    # extent = [-anode_z*cm,cathode_z*cm,downstream*cm,upstream*cm]
-    kwargs = dict(
-        vmin=-vmax, vmax=vmax,
-        cmap='winter',
-        origin='lower',
-        extent=extent,
-        interpolation='none',
-    )
+    # # fs = 10 # Font size
+    # vmax = 0.5 # Range on colorbar [cm]
+    # extent = [-anode_z*cm,anode_z*cm,downstream*cm,upstream*cm]
+    # # extent = [-anode_z*cm,cathode_z*cm,downstream*cm,upstream*cm]
+    # kwargs = dict(
+    #     vmin=-vmax, vmax=vmax,
+    #     cmap='winter',
+    #     origin='lower',
+    #     extent=extent,
+    #     interpolation='none',
+    # )
         
-    ax = axes[0]
-    im = ax.imshow(dx_hist_zx, **kwargs)
-    ax.set_ylabel('$\mathrm{x_{reco}}$ [cm]',fontsize=fs)
-    # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    ax.set_title('$\mathrm{\Delta x}$ [cm]',fontsize=fs)
-    # ax.tick_params(axis='both', which='minor', labelsize=fs)
-    h2d_config( ax, extent, fs )
-
-    ax = axes[1]
-    im = ax.imshow(dy_hist_zx, **kwargs)
+    # ax = axes[0]
+    # im = ax.imshow(dx_hist_zx, **kwargs)
     # ax.set_ylabel('$\mathrm{x_{reco}}$ [cm]',fontsize=fs)
-    # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    ax.set_title('$\mathrm{\Delta y}$ [cm]',fontsize=fs)
-    # ax.tick_params(axis='both', which='minor', labelsize=fs)
-    h2d_config( ax, extent, fs )
+    # # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
+    # ax.set_title('$\mathrm{\Delta x}$ [cm]',fontsize=fs)
+    # # ax.tick_params(axis='both', which='minor', labelsize=fs)
+    # h2d_config( ax, extent, fs )
 
-    cax,kw = mpl.colorbar.make_axes(axes.flatten())
-    cbar = plt.colorbar(im, cax=cax)
-    cbar.set_label(label='[cm]', size=fs)
-    cbar.ax.tick_params(labelsize=fs)
-    # plt.show()
-    #----------------------------------------------------------------------------#
+    # ax = axes[1]
+    # im = ax.imshow(dy_hist_zx, **kwargs)
+    # # ax.set_ylabel('$\mathrm{x_{reco}}$ [cm]',fontsize=fs)
+    # # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
+    # ax.set_title('$\mathrm{\Delta y}$ [cm]',fontsize=fs)
+    # # ax.tick_params(axis='both', which='minor', labelsize=fs)
+    # h2d_config( ax, extent, fs )
+
+    # cax,kw = mpl.colorbar.make_axes(axes.flatten())
+    # cbar = plt.colorbar(im, cax=cax)
+    # cbar.set_label(label='[cm]', size=fs)
+    # cbar.ax.tick_params(labelsize=fs)
+    # # plt.show()
+    # #----------------------------------------------------------------------------#
 
 
-    #----------------------------------------------------------------------------#
-    # Plot zy face projection
-    #----------------------------------------------------------------------------#
-    # global plt
-    fig, axes = plt.subplots(1,2, figsize=(3, 6), sharex=True, sharey=True)
+    # #----------------------------------------------------------------------------#
+    # # Plot zy face projection
+    # #----------------------------------------------------------------------------#
+    # # global plt
+    # fig, axes = plt.subplots(1,2, figsize=(3, 6), sharex=True, sharey=True)
 
-    # fs = 10 # Font size
-    vmax = 0.5 # Range on colorbar [cm]
-    extent = [-anode_z*cm,anode_z*cm, bottom*cm,top*cm]
-    # extent = [-anode_z*cm,cathode_z*cm, bottom*cm,top*cm]
-    kwargs = dict(
-        vmin=-vmax, vmax=vmax,
-        cmap='winter',
-        origin='lower',
-        extent = extent,
-        interpolation='none',
-    )
+    # # fs = 10 # Font size
+    # vmax = 0.5 # Range on colorbar [cm]
+    # extent = [-anode_z*cm,anode_z*cm, bottom*cm,top*cm]
+    # # extent = [-anode_z*cm,cathode_z*cm, bottom*cm,top*cm]
+    # kwargs = dict(
+    #     vmin=-vmax, vmax=vmax,
+    #     cmap='winter',
+    #     origin='lower',
+    #     extent = extent,
+    #     interpolation='none',
+    # )
         
-    ax = axes[0]
-    im = ax.imshow(dx_hist_zy, **kwargs)
-    ax.set_ylabel('$\mathrm{y_{reco}}$ [cm]',fontsize=fs)
-    # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    ax.set_title('$\mathrm{\Delta x}$ [cm]',fontsize=fs)
-    # ax.tick_params(axis='both', which='minor', labelsize=fs)
-    h2d_config( ax, extent, fs )
-
-    ax = axes[1]
-    im = ax.imshow(dy_hist_zy, **kwargs)
+    # ax = axes[0]
+    # im = ax.imshow(dx_hist_zy, **kwargs)
     # ax.set_ylabel('$\mathrm{y_{reco}}$ [cm]',fontsize=fs)
-    # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
-    ax.set_title('$\mathrm{\Delta y}$ [cm]',fontsize=fs)
-    # ax.tick_params(axis='both', which='minor', labelsize=fs)
-    h2d_config( ax, extent, fs )
+    # # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
+    # ax.set_title('$\mathrm{\Delta x}$ [cm]',fontsize=fs)
+    # # ax.tick_params(axis='both', which='minor', labelsize=fs)
+    # h2d_config( ax, extent, fs )
+
+    # ax = axes[1]
+    # im = ax.imshow(dy_hist_zy, **kwargs)
+    # # ax.set_ylabel('$\mathrm{y_{reco}}$ [cm]',fontsize=fs)
+    # # ax.set_xlabel('$\mathrm{z_{reco}}$ [cm]',fontsize=fs)
+    # ax.set_title('$\mathrm{\Delta y}$ [cm]',fontsize=fs)
+    # # ax.tick_params(axis='both', which='minor', labelsize=fs)
+    # h2d_config( ax, extent, fs )
 
 
-    cax,kw = mpl.colorbar.make_axes(axes.flatten())
-    cbar = plt.colorbar(im, cax=cax)
-    cbar.set_label(label='[cm]', size=fs)
-    cbar.ax.tick_params(labelsize=fs)
+    # cax,kw = mpl.colorbar.make_axes(axes.flatten())
+    # cbar = plt.colorbar(im, cax=cax)
+    # cbar.set_label(label='[cm]', size=fs)
+    # cbar.ax.tick_params(labelsize=fs)
 
     plt.show()
-    # Can save individual figures by...
-    # plt.savefig('blah.eps')
-    #----------------------------------------------------------------------------#
+    # # Can save individual figures by...
+    # # plt.savefig('blah.eps')
+    # #----------------------------------------------------------------------------#
 
 if __name__ == '__main__': 
     import argparse

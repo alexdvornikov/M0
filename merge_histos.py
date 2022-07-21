@@ -1,7 +1,7 @@
 # Output three histograms. 
 # One hexbin and two binned_statistic_2d. 
 
-# python3 merge_histos.py -i /Users/alex/Desktop/hists3d/hb -o1 hist3d_merged.npy 
+# python3 merge_histos.py -i /Users/alex/Desktop/3d_histos -o1 hist3d_merged.npy 
 # python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/hb -o1 hb_counts_2anodes_merged.npy
 
 # python3 merge_histos.py -i /Users/alex/Desktop/hists_2anodes/zx -o2 hist2d_zx_2anodes_merged.npy 
@@ -34,6 +34,7 @@ def main(indir,output1,output2,output3):
     counts = np.zeros(array_shape)
     for file in os.listdir(indir):
         thisCount = np.load(indir + '/' + file, allow_pickle=True)
+        thisCount[np.isnan(thisCount)] = 0 #set NaNs to zeros
         print(thisCount.shape)
         print(counts.shape)
         counts = counts + thisCount #np.add() if same shape

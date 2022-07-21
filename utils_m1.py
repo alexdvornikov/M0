@@ -24,6 +24,7 @@ sns.set_theme(context='talk', style='white')
 import consts
 from consts import detector
 import plot_theme #Custom theme for plotly
+import solarized
 from selection import *
 
 # Peter's library 
@@ -122,6 +123,7 @@ def distortions(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
 
     # If using first few hits by anode...
     # Sort by earliest (by anode) hits
+    # Should be the same as sorting by closest in z
     if near_anode:
 
         # Get hit times

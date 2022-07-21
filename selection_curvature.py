@@ -79,7 +79,7 @@ def main(args):
         startHitPos, endHitPos = get_extreme_hit_pos(t0,thisTrack,theseHits[0],my_geometry)
 
         #----------------------------------------------------------------------------#
-        # July 14, 2022
+        # Check if crossing both anodes
         #----------------------------------------------------------------------------#
         if is_both_anodes_piercer(startHitPos, endHitPos, anode_z, epsilon):
 
