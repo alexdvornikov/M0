@@ -1,4 +1,4 @@
-# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/AA_crossers
+# python selection_batch_manager_m1.py -i /global/project/projectdirs/dune/www/data/Module1/reco/charge_only/ -r /global/project/projectdirs/dune/www/data/Module1/runlist.txt -o /global/project/projectdirs/dune/users/olexiy/m1_AA_crossers -n 10
 
 # Module1 runlist
 # https://portal.nersc.gov/project/dune/data/Module1/runlist.txt

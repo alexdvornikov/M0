@@ -5,7 +5,7 @@ from datetime import datetime
 startTime = datetime.now()
 # Also need to uncomment a datetime line above __main__ at the bottom of the code. 
 
-from tqdm import tqdm
+# from tqdm import tqdm # If want progress bar use tqdm
 from collections import defaultdict
 from utils_m1 import *
     
@@ -45,7 +45,8 @@ def main(args):
     i = 0
     n_selected_tracks = 0
 
-    for thisTrack_idx in tqdm(track_idx[:N]):
+    for thisTrack_idx in track_idx[:N]:
+    # for thisTrack_idx in tqdm(track_idx[:N]): #If want progress bar use tqdm
 
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))
