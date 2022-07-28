@@ -166,18 +166,25 @@ def distortions_2anodes(t0, geometry, pos3d, PCAhits):
 
     output = {}
     pos3d = np.column_stack( [ pos3d[0], pos3d[1], pos3d[2] ] )
-    output['reco'] = pos3d
-
+   
     pca = PCA(1)
     pca.fit(PCAhits)
     
     v_dir = pca.components_[0]
+    # want v_dir to have well-defined handedness
+    # to make a consistent sense of TPC ordering
+    if v_dir[2] > 0:
+        v_dir *= -1
     r0 = np.mean(PCAhits, axis=0)
         
     # "True" track
     t_par = (pos3d - r0).dot(v_dir)
     true_track = r0 + t_par[:,None] * v_dir[None,:]
+
+    # include t_par for sorting later
+    output['reco'] = pos3d
     output['true'] = true_track
+    output['t_par'] = t_par
     
     return output
 

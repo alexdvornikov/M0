@@ -94,24 +94,6 @@ def main(args):
             ds = distortions_2anodes(t0, my_geometry, pos3d, extremeHits)
             # TO DO: CHECK IF ANY TRACK IS CONTRIBUTING TOO MUCH (CLEARLY HUGE DISTORTIONS)
             # ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
-
-            # temporary, plot event display for inspection
-            from plotting import draw_boundaries, plot_track, plot_hits
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection = '3d')
-            draw_boundaries(ax)
-            plot_track(ax, thisTrack, f, my_geometry)
-            color = ['blue' if iog == 1 else 'red' if iog == 2 else 'yellow'
-                     for iog in theseHits[0]['iogroup']]
-            # color = 'red'
-            # for hit in theseHits:
-            #     print (len(hit))
-            #     print (len(hit['iogroup']))
-            print (len(theseHits))
-            
-            ax.scatter(*pos3d, c = color)
-            plt.show()
-
             output.append(ds)
             n_selected_tracks += 1
 
