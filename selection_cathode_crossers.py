@@ -94,21 +94,22 @@ def main(args):
             tpc1_true = true[TPC1mask]
             tpc1_reco = reco[TPC1mask]
 
-            cathode_nearest_tpc1_true = tpc1_true[0]
-            cathode_nearest_tpc1_reco = tpc1_reco[0]
+            if any(TPC1mask) and any(TPC2mask):
+                cathode_nearest_tpc1_true = tpc1_true[0]
+                cathode_nearest_tpc1_reco = tpc1_reco[0]
 
-            tpc2_true = true[TPC2mask]
-            tpc2_reco = reco[TPC2mask]
+                tpc2_true = true[TPC2mask]
+                tpc2_reco = reco[TPC2mask]
 
-            cathode_nearest_tpc2_true = tpc2_true[-1]
-            cathode_nearest_tpc2_reco = tpc2_reco[-1]
+                cathode_nearest_tpc2_true = tpc2_true[-1]
+                cathode_nearest_tpc2_reco = tpc2_reco[-1]
+                
+                cath1_true_hits.append(cathode_nearest_tpc1_true)
+                cath1_reco_hits.append(cathode_nearest_tpc1_reco)
+                cath2_true_hits.append(cathode_nearest_tpc2_true)
+                cath2_reco_hits.append(cathode_nearest_tpc2_reco)
 
-            cath1_true_hits.append(cathode_nearest_tpc1_true)
-            cath1_reco_hits.append(cathode_nearest_tpc1_reco)
-            cath2_true_hits.append(cathode_nearest_tpc2_true)
-            cath2_reco_hits.append(cathode_nearest_tpc2_reco)
-
-            n_selected_tracks += 1
+                n_selected_tracks += 1
 
     print('Number of selected tracks: ' + str(n_selected_tracks))
     
