@@ -76,7 +76,14 @@ def main(args):
         #----------------------------------------------------------------------------#
         # Get endpoints
         #----------------------------------------------------------------------------#
-        startHitPos, endHitPos = get_extreme_hit_pos(t0,thisTrack,theseHits[0],my_geometry)
+        extremeHits = get_extreme_hit_pos(t0,
+                                          thisTrack,
+                                          theseHits[0],
+                                          my_geometry,
+                                          n = 5)
+
+        startHitPos = extremeHits[0]
+        endHitPos = extremeHits[-1]
 
         #----------------------------------------------------------------------------#
         # Check if crossing both anodes
@@ -84,9 +91,27 @@ def main(args):
         if is_both_anodes_piercer(startHitPos, endHitPos, anode_z, epsilon):
 
             # For more on get_pca_endpts see utils_m1.py
-            ds = distortions_2anodes(t0, my_geometry, pos3d, startHitPos, endHitPos)
+            ds = distortions_2anodes(t0, my_geometry, pos3d, extremeHits)
             # TO DO: CHECK IF ANY TRACK IS CONTRIBUTING TOO MUCH (CLEARLY HUGE DISTORTIONS)
             # ds = distortions(t0, my_geometry, theseHits[0], pos3d, near_anode = True, nhit = 10)
+
+            # temporary, plot event display for inspection
+            from plotting import draw_boundaries, plot_track, plot_hits
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection = '3d')
+            draw_boundaries(ax)
+            plot_track(ax, thisTrack, f, my_geometry)
+            color = ['blue' if iog == 1 else 'red' if iog == 2 else 'yellow'
+                     for iog in theseHits[0]['iogroup']]
+            # color = 'red'
+            # for hit in theseHits:
+            #     print (len(hit))
+            #     print (len(hit['iogroup']))
+            print (len(theseHits))
+            
+            ax.scatter(*pos3d, c = color)
+            plt.show()
+
             output.append(ds)
             n_selected_tracks += 1
 

@@ -63,7 +63,6 @@ class Data():
         self.t0_reg = f['combined/t0/ref/charge/events/ref_region']
         self.t0_ref = f['charge/events/ref/combined/t0/ref']
 
-
 def approx_equals(x, bound, ep):
     return np.abs(x - bound) < ep
 
@@ -96,7 +95,7 @@ def hit_to_3d(geometry, hits, last_trigger):
 
     return hits_pos
 
-def get_extreme_hit_pos(t0, track, hits, my_geometry):
+def get_extreme_hit_pos(t0, track, hits, my_geometry, n = 1):
     trackStart = np.array([track['start'][0] + my_geometry.tpc_offsets[0][0]*10,
                            track['start'][1] + my_geometry.tpc_offsets[0][1]*10,
                            track['start'][2] + my_geometry.tpc_offsets[0][2]*10])
@@ -110,10 +109,10 @@ def get_extreme_hit_pos(t0, track, hits, my_geometry):
 
     l = np.dot((hits3d.T - trackStart),trackdl)/np.dot(trackdl, trackdl)
 
-    return hits3d[:,np.argmin(l)], hits3d[:,np.argmax(l)]
-
-
-
+    orderedHits = hits3d[:, np.argsort(l)]
+    extremeHits = np.concatenate([orderedHits[:,:n].T,
+                                  orderedHits[:,-n:].T])
+    return extremeHits    
 
 def distortions(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
 
@@ -163,22 +162,17 @@ def distortions(t0, geometry, hits, pos3d, near_anode = True, nhit = 10):
     
     return output
 
-
-
-def distortions_2anodes(t0, geometry, pos3d, start,end):
+def distortions_2anodes(t0, geometry, pos3d, PCAhits):
 
     output = {}
     pos3d = np.column_stack( [ pos3d[0], pos3d[1], pos3d[2] ] )
     output['reco'] = pos3d
 
-
-    # Only use anode-to-anode crossing endpoints for the line fit
-    coords = np.array( [start,end] )   
     pca = PCA(1)
-    pca.fit(coords)
+    pca.fit(PCAhits)
     
     v_dir = pca.components_[0]
-    r0 = coords.mean(axis=0)
+    r0 = np.mean(PCAhits, axis=0)
         
     # "True" track
     t_par = (pos3d - r0).dot(v_dir)
@@ -187,8 +181,6 @@ def distortions_2anodes(t0, geometry, pos3d, start,end):
     
     return output
 
-
-    
 def get_TPC_bounds():
     bounds = []
     for ix in range(detector.TPC_BORDERS.shape[0]):
