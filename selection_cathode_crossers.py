@@ -43,11 +43,18 @@ def main(args):
     cath2_reco_hits = []
     cath2_true_hits = []
 
-    print('Number of tracks in file: ' + str( N ))
+    if args.verbose:
+        print('Number of tracks in file: ' + str( N ))
+
     i = 0
     n_selected_tracks = 0
 
-    for thisTrack_idx in tqdm(track_idx[:N]):
+    if args.verbose:
+        iterable = tqdm(track_idx[:N])
+    else:
+        iterable = track_idx[:N]
+        
+    for thisTrack_idx in iterable:
 
         thisTrack = data.rawTracks[thisTrack_idx]
         thisEvent = dereference(thisTrack_idx, data.track_ref, data.rawEvents, region=data.track_reg, ref_direction=(1,0))
@@ -111,7 +118,9 @@ def main(args):
 
                 n_selected_tracks += 1
 
-    print('Number of selected tracks: ' + str(n_selected_tracks))
+
+    if args.verbose:
+        print('Number of selected tracks: ' + str(n_selected_tracks))
     
     if args.output: 
         outputArr = np.array([[cath1_true_hits,
@@ -148,6 +157,9 @@ if __name__ == '__main__':
                         default = '',
                         type = str,
                         help = 'output file')
+    parser.add_argument('-v', '--verbose',
+                        action = 'store_true',
+                        help = 'set verbosity')
 
     args = parser.parse_args()
 
