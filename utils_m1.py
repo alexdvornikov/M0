@@ -185,6 +185,7 @@ def distortions_2anodes(t0, geometry, pos3d, PCAhits):
     output['reco'] = pos3d
     output['true'] = true_track
     output['t_par'] = t_par
+    output['v_dir'] = v_dir
     
     return output
 

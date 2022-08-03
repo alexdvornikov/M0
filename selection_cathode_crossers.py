@@ -37,11 +37,12 @@ def main(args):
     else:
         N = len(track_idx)
 
-    # output = []
     cath1_reco_hits = []
     cath1_true_hits = []
     cath2_reco_hits = []
     cath2_true_hits = []
+
+    PCA_dir = []
 
     if args.verbose:
         print('Number of tracks in file: ' + str( N ))
@@ -116,6 +117,8 @@ def main(args):
                 cath2_true_hits.append(cathode_nearest_tpc2_true)
                 cath2_reco_hits.append(cathode_nearest_tpc2_reco)
 
+                PCA_dir.append(ds['v_dir'])
+
                 n_selected_tracks += 1
 
 
@@ -123,10 +126,11 @@ def main(args):
         print('Number of selected tracks: ' + str(n_selected_tracks))
     
     if args.output: 
-        outputArr = np.array([[cath1_true_hits,
-                               cath1_reco_hits],
-                              [cath2_true_hits,
-                               cath2_reco_hits],
+        outputArr = np.array([cath1_true_hits,
+                              cath1_reco_hits,
+                              cath2_true_hits,
+                              cath2_reco_hits,
+                              PCA_dir,
                               ])
 
         np.save(args.output, outputArr)
