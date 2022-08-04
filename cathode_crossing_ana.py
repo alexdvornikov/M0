@@ -9,15 +9,15 @@ TPC2_reco = []
 
 inputDir = './cathode_crossers'
 
-TPC1_true = np.concatenate([np.load(os.path.join(inputDir, infile))[0,:,:]
+TPC1_true = np.concatenate([np.load(os.path.join(inputDir, infile))[0,:]
                             for infile in os.listdir(inputDir)])
-TPC1_reco = np.concatenate([np.load(os.path.join(inputDir, infile))[1,:,:]
+TPC1_reco = np.concatenate([np.load(os.path.join(inputDir, infile))[1,:]
                             for infile in os.listdir(inputDir)])
-TPC2_true = np.concatenate([np.load(os.path.join(inputDir, infile))[2,:,:]
+TPC2_true = np.concatenate([np.load(os.path.join(inputDir, infile))[2,:]
                             for infile in os.listdir(inputDir)])
-TPC2_reco = np.concatenate([np.load(os.path.join(inputDir, infile))[3,:,:]
+TPC2_reco = np.concatenate([np.load(os.path.join(inputDir, infile))[3,:]
                             for infile in os.listdir(inputDir)])
-v_dir = np.concatenate([np.load(os.path.join(inputDir, infile))[4,:,:]
+v_dir = np.concatenate([np.load(os.path.join(inputDir, infile))[4,:]
                         for infile in os.listdir(inputDir)])
 
 import matplotlib.pyplot as plt
@@ -90,10 +90,10 @@ from matplotlib import cm
 #            origin = 'lower')
 # plt.imshow(TPC1_dz_mean,
 #            origin = 'lower')
-nonNaN = TPC2_dx_mean[~np.isnan(TPC2_dx_mean)]
+nonNaN = TPC2_dz_mean[~np.isnan(TPC2_dz_mean)]
 vext = np.max([np.max(nonNaN), -np.min(nonNaN)])
 print ("vext", vext)
-plt.imshow(TPC2_dx_mean,
+plt.imshow(TPC2_dz_mean,
            origin = 'lower',
            extent = (np.min(bins[0]), np.max(bins[0]),
                      np.min(bins[1]), np.max(bins[1])),
@@ -110,5 +110,5 @@ plt.ylabel(r'y [mm]')
 plt.title(r'TPC 2')
 plt.gca().set_aspect('equal')
 cb = plt.colorbar()
-cb.set_label(r'$\Delta x$ [mm]')
+cb.set_label(r'$\Delta z$ [mm]')
 plt.show()
