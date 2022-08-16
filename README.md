@@ -11,6 +11,6 @@
 <img src="https://github.com/alexdvornikov/M0/blob/main/m1_fitting.png" width="300"/>
 <br />
 
-<img src="https://github.com/alexdvornikov/M0/blob/main/tpc1.png" width="500"/>
+<img src="https://github.com/alexdvornikov/M0/blob/main/tpc1.png" width="800"/>
 
 
