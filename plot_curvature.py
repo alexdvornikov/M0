@@ -22,6 +22,13 @@ def main(args):
     upstream = TPC_bounds[0][0][1]
     downstream = TPC_bounds[0][0][0]
     cm = 0.1 #Conversion from mm to cm
+    print(anode_z) #304.31 [mm]
+    print(cathode_z) #1.5875 [mm] or 1/16''
+    print(top) #402.524
+    print(bottom) #839
+    print(upstream) #310.38
+    print(downstream) #-310.38
+    # The cathode is 1/8'' (so 1/16'' into each TPC)?
 
 
     #----------------------------------------------------------------------------#
@@ -141,6 +148,9 @@ def main(args):
     
     dx_3dhist, dy_3dhist, dz_3dhist = load_3dhist('hist3d_merged.npy')
 
+    # print( (dx_3dhist.T).shape )
+    # print( ( (dx_3dhist.T)[0] ).T.shape )
+
     # #----------------------------------------------------------------------------#
     # # Plot hexbin deviation vs drift coordinate (using [cm] units)
     # #----------------------------------------------------------------------------#
@@ -169,71 +179,174 @@ def main(args):
     # #----------------------------------------------------------------------------#
 
 
+    # #----------------------------------------------------------------------------#
+    # # Set up the quiver plot. 
+    # #----------------------------------------------------------------------------#
+    # zbins = round( (2*anode_z)*cm)
+    # xbins = round( (upstream + abs(downstream))*cm )
+    # ybins = round( (top + abs(bottom))*cm )
+    # xbins, ybins, zbins = round(xbins), round(ybins), round(zbins)
+
+    # z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
+    # x_grid = np.linspace(downstream*cm,upstream*cm,xbins)
+    # y_grid = np.linspace(bottom*cm,top*cm, ybins)
+    # xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid, indexing='ij')
+
+
+    # data_length = len( xx.flatten() )
+    # x=xx.flatten()
+    # y=yy.flatten()
+    # z=zz.flatten()
+    # u=dx_3dhist.flatten()
+    # v=dy_3dhist.flatten()
+    # w=dz_3dhist.flatten()
+    # w = 0*w #Set z to zero (we're at some z slices)
+
+    # X, Y, Z = [], [], []
+    # U, V, W = [], [], []
+
+    # for i in range(data_length):
+    #     if u[i] != 0:
+    #         X.append(x[i])
+    #         Y.append(y[i])
+    #         Z.append(z[i])
+
+    #         U.append(u[i])
+    #         V.append(v[i])
+    #         W.append(w[i])
+
+
+    # fig = go.Figure( layout=solarized.layout3d_dark )
+    # # Surface for cathode
+    # fig.add_trace( go.Surface( x = x_grid, y = y_grid, z= 0*np.ones((ybins,xbins)), 
+    #                                 colorscale='Gray', showscale=False,
+    #                                 opacity = 0.5) )
+
+    # # Use plotly's Cone plot for the vector field (aka quiver plot)
+    # fig.add_trace( go.Cone(
+    #     x=X,y=Y,z=Z, u=U,v=V,w=W,
+    #     # cmax = 0.5, cmin = 0, 
+    #     colorscale='viridis', 
+    #     sizemode="absolute", #sizemode="scaled",
+    #     sizeref = 6,
+    #     opacity=1) )
+
+
+    # fig.update_scenes(
+    #     aspectmode='data', #cube
+    #     xaxis_range=(downstream*cm,upstream*cm),
+    #     yaxis_range=(bottom*cm,top*cm),
+    #     zaxis_range=(-anode_z*cm,anode_z*cm),
+    #     xaxis_title='x [cm]',
+    #     yaxis_title='y [cm]',
+    #     zaxis_title='z [cm]',
+    # )
+
+    # fig.write_html("quiver_test.html")
+    # fig.show()
+
+
+
+
+
+
     #----------------------------------------------------------------------------#
-    # Set up the quiver plot. 
+    # Set up a 2d quiver plot. 
     #----------------------------------------------------------------------------#
-    zbins = round( (2*anode_z)*cm)
+    import plotly.figure_factory as ff
+    z_slice = 30
+    # U = ( (dx_3dhist.T)[z_slice] ).T #get slice from 3d vector field and flip it accordingly 
+    # V = ( (dy_3dhist.T)[z_slice] ).T
+    # zbins = round( (2*anode_z)*cm)
     xbins = round( (upstream + abs(downstream))*cm )
     ybins = round( (top + abs(bottom))*cm )
-    xbins, ybins, zbins = round(xbins), round(ybins), round(zbins)
+    xbins, ybins = round(xbins), round(ybins)
+    # xbins, ybins, zbins = round(xbins), round(ybins), round(zbins)
 
-    z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
+    # z_grid = np.linspace(-anode_z*cm,anode_z*cm,zbins)
     x_grid = np.linspace(downstream*cm,upstream*cm,xbins)
     y_grid = np.linspace(bottom*cm,top*cm, ybins)
-    xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid, indexing='ij')
+    # X,Y = np.meshgrid(x_grid, y_grid, indexing='ij')
+    xx,yy = np.meshgrid(x_grid, y_grid, indexing='ij')
+    # xx,yy,zz = np.meshgrid(x_grid, y_grid,z_grid, indexing='ij')
+
+    # print(xx.shape)
+    # print(yy.shape)
 
 
     data_length = len( xx.flatten() )
     x=xx.flatten()
     y=yy.flatten()
-    z=zz.flatten()
-    u=dx_3dhist.flatten()
-    v=dy_3dhist.flatten()
-    w=dz_3dhist.flatten()
-    w = 0*w #Set z to zero (we're at some z slices)
+    # z=zz.flatten()
+    print(  (dx_3dhist.T).shape )
+    print( ( ( (dx_3dhist.T)[z_slice] ).T ).shape )
+    u = ( ( (dx_3dhist.T)[z_slice] ).T ).flatten()
+    v = ( ( (dy_3dhist.T)[z_slice] ).T ).flatten()
+    # w=dz_3dhist.flatten()
+    # w = 0*w #Set z to zero (we're at some z slices)
 
-    X, Y, Z = [], [], []
-    U, V, W = [], [], []
+    X,Y = [],[]
+    U,V = [],[]
+
+    # X, Y, Z = [], [], []
+    # U, V, W = [], [], []
 
     for i in range(data_length):
         if u[i] != 0:
             X.append(x[i])
             Y.append(y[i])
-            Z.append(z[i])
+            # Z.append(z[i])
 
             U.append(u[i])
             V.append(v[i])
-            W.append(w[i])
+            # W.append(w[i])
 
 
-    fig = go.Figure( layout=solarized.layout3d_dark )
+    fig, ax = plt.subplots(figsize =(14, 8))
+    ax.quiver(X, Y, U, V, units='xy', scale=0.1)
+    # plt.figure(figsize=(10, 10))
+    # plt.streamplot(X,Y,U,V,linewidth=None)
+    
+    # ax.xaxis.set_ticks([])
+    # ax.yaxis.set_ticks([])
+    # ax.axis([-0.3, 2.3, -0.3, 2.3])
+    # ax.set_aspect('equal')
+    
+    # show plot
+    plt.show()
+
+
+
+    # fig = go.Figure( layout=solarized.layout3d_dark )
+    # fig = ff.create_quiver(x=X, y=Y, u=U, v=V, 
+    #                             scale = 5, arrow_scale = 0.5,line_width = 2)
     # Surface for cathode
-    fig.add_trace( go.Surface( x = x_grid, y = y_grid, z= 0*np.ones((ybins,xbins)), 
-                                    colorscale='Gray', showscale=False,
-                                    opacity = 0.5) )
+    # fig.add_trace( go.Surface( x = x_grid, y = y_grid, z= 0*np.ones((ybins,xbins)), 
+    #                                 colorscale='Gray', showscale=False,
+    #                                 opacity = 0.5) )
 
-    # Use plotly's Cone plot for the vector field (aka quiver plot)
-    fig.add_trace( go.Cone(
-        x=X,y=Y,z=Z, u=U,v=V,w=W,
-        # cmax = 0.5, cmin = 0, 
-        colorscale='viridis', 
-        sizemode="absolute", #sizemode="scaled",
-        sizeref = 6,
-        opacity=1) )
+    # # Use plotly's Cone plot for the vector field (aka quiver plot)
+    # fig.add_trace( go.Cone(
+    #     x=X,y=Y,z=Z, u=U,v=V,w=W,
+    #     # cmax = 0.5, cmin = 0, 
+    #     colorscale='viridis', 
+    #     sizemode="absolute", #sizemode="scaled",
+    #     sizeref = 6,
+    #     opacity=1) )
 
 
-    fig.update_scenes(
-        aspectmode='data', #cube
-        xaxis_range=(downstream*cm,upstream*cm),
-        yaxis_range=(bottom*cm,top*cm),
-        zaxis_range=(-anode_z*cm,anode_z*cm),
-        xaxis_title='x [cm]',
-        yaxis_title='y [cm]',
-        zaxis_title='z [cm]',
-    )
+    # fig.update_scenes(
+    #     aspectmode='data', #cube
+    #     xaxis_range=(downstream*cm,upstream*cm),
+    #     yaxis_range=(bottom*cm,top*cm),
+    #     # zaxis_range=(-anode_z*cm,anode_z*cm),
+    #     xaxis_title='x [cm]',
+    #     yaxis_title='y [cm]',
+    #     # zaxis_title='z [cm]',
+    # )
 
-    fig.write_html("quiver_test.html")
-    fig.show()
+    # # fig.write_html("quiver_test_2d.html")
+    # fig.show()
 
     # #----------------------------------------------------------------------------#
     # # Plot zx face projection
