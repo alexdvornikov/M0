@@ -37,10 +37,8 @@ def main(args):
     else:
         N = len(track_idx)
 
-    cath1_reco_hits = []
-    cath1_true_hits = []
-    cath2_reco_hits = []
-    cath2_true_hits = []
+    reco_hits = []
+    true_hits = []
 
     PCA_dir = []
 
@@ -91,45 +89,40 @@ def main(args):
 
             ds = distortions_2anodes(t0, my_geometry, pos3d, extremeHits)
 
-            t_par = ds['t_par']
-            reco = ds['reco'][np.argsort(t_par), :]
-            true = ds['true'][np.argsort(t_par), :]
-            iog = theseHits[0]['iogroup'][np.argsort(t_par)]
+            # t_par = ds['t_par']
+            # reco = ds['reco'][np.argsort(t_par), :]
+            # true = ds['true'][np.argsort(t_par), :]
+            reco = ds['reco']
+            true = ds['true']
+            # iog = theseHits[0]['iogroup'][np.argsort(t_par)]
 
-            TPC1mask = iog == 1
-            TPC2mask = iog == 2
+            # TPC1mask = iog == 1
+            # TPC2mask = iog == 2
 
-            tpc1_true = true[TPC1mask]
-            tpc1_reco = reco[TPC1mask]
-
-            if any(TPC1mask) and any(TPC2mask):
-                cathode_nearest_tpc1_true = tpc1_true[0]
-                cathode_nearest_tpc1_reco = tpc1_reco[0]
-
-                tpc2_true = true[TPC2mask]
-                tpc2_reco = reco[TPC2mask]
-
-                cathode_nearest_tpc2_true = tpc2_true[-1]
-                cathode_nearest_tpc2_reco = tpc2_reco[-1]
+            # if np.any(TPC1mask) and np.any(TPC2mask):
+            n_hits = len(true)
+            PCA_dir_tiled = np.tile(ds['v_dir'], (n_hits, 1))
                 
-                cath1_true_hits.append(cathode_nearest_tpc1_true)
-                cath1_reco_hits.append(cathode_nearest_tpc1_reco)
-                cath2_true_hits.append(cathode_nearest_tpc2_true)
-                cath2_reco_hits.append(cathode_nearest_tpc2_reco)
-
-                PCA_dir.append(ds['v_dir'])
-
-                n_selected_tracks += 1
+            if not np.any(true_hits):
+                true_hits = true
+                reco_hits = reco
+                PCA_dir = PCA_dir_tiled
+                # print(true_hits)
+                # print(PCA_dir_tiled)
+            else:
+                true_hits = np.concatenate([true_hits, true])
+                reco_hits = np.concatenate([reco_hits, reco])
+                PCA_dir = np.concatenate([PCA_dir, PCA_dir_tiled])
+                
+            n_selected_tracks += 1
 
 
     if args.verbose:
         print('Number of selected tracks: ' + str(n_selected_tracks))
     
     if args.output: 
-        outputArr = np.array([cath1_true_hits,
-                              cath1_reco_hits,
-                              cath2_true_hits,
-                              cath2_reco_hits,
+        outputArr = np.array([true_hits,
+                              reco_hits,
                               PCA_dir,
                               ])
 
