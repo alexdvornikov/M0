@@ -11,9 +11,9 @@
 <img src="https://github.com/alexdvornikov/M0/blob/main/m1_fitting.png" width="300"/>
 <br />
 
-<img src="https://github.com/alexdvornikov/M0/blob/main/dx_mod1.gif" width="300"/>
+<img src="https://github.com/alexdvornikov/M0/blob/main/dx_mod1.gif" width="400"/>
 <br />
 
-<img src="https://github.com/alexdvornikov/M0/blob/main/tpc1.png" width="800"/>
+<!-- <img src="https://github.com/alexdvornikov/M0/blob/main/tpc1.png" width="800"/> -->
 
 
