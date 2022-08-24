@@ -8,7 +8,7 @@
 [runlist](https://portal.nersc.gov/project/dune/data/Module1/runlist.txt).
 <br />
 
-Anode to anode crossers. 
+Anode to anode crossing muons. 
 <br />
 <img src="https://github.com/alexdvornikov/M0/blob/main/AA_Crossers.png" width="300"/>
 <br />
