@@ -8,7 +8,7 @@
 [runlist](https://portal.nersc.gov/project/dune/data/Module1/runlist.txt).
 <br />
 
-<img src="https://github.com/alexdvornikov/M0/blob/main/m1_fitting.png" width="300"/>
+<img src="https://github.com/alexdvornikov/M0/blob/main/AA_Crossers.png" width="300"/>
 <br />
 
 <img src="https://github.com/alexdvornikov/M0/blob/main/dx_mod1.gif" width="400"/>
