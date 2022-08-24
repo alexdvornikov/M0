@@ -8,10 +8,10 @@
 [runlist](https://portal.nersc.gov/project/dune/data/Module1/runlist.txt).
 <br />
 
-![Alt Text](https://github.com/alexdvornikov/M0/blob/main/dx_mod1.gif)
+<img src="https://github.com/alexdvornikov/M0/blob/main/m1_fitting.png" width="300"/>
 <br />
 
-<img src="https://github.com/alexdvornikov/M0/blob/main/m1_fitting.png" width="300"/>
+<img src="https://github.com/alexdvornikov/M0/blob/main/dx_mod1.gif" width="300"/>
 <br />
 
 <img src="https://github.com/alexdvornikov/M0/blob/main/tpc1.png" width="800"/>
